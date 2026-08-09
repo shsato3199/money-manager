@@ -1,3 +1,12 @@
 <template>
-  <h1>ログイン前画面用レイアウト</h1>
+  <main>
+    <!-- ログイン画面 -->
+  </main>
 </template>
+
+<script setup>
+definePageMeta({
+  //ログイン前レイアウトの読み込み
+  layout: "login",
+});
+</script>
