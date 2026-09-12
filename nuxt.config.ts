@@ -1,4 +1,16 @@
 export default defineNuxtConfig({
+  app: {
+    head: {
+      link: [
+        // favicon設定
+        {
+          rel: "icon",
+          type: "image/png",
+          href: "/img/household-ledger.png",
+        },
+      ],
+    },
+  },
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
 
