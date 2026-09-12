@@ -1,12 +1,7 @@
+<!--ログイン前専用の共通レイアウト です。-->
+<!--ヘッダーやフッターなど、ログイン前の各画面で共通に出したいものを書きます。-->
 <template>
   <main>
-    <!-- ログイン画面 -->
+    <slot />
   </main>
 </template>
-
-<script setup>
-definePageMeta({
-  //ログイン前レイアウトの読み込み
-  layout: "login",
-});
-</script>
