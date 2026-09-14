@@ -10,7 +10,6 @@ definePageMeta({
     class="min-vh-100 d-flex align-items-center justify-content-center bg-light px-3"
   >
     <div class="text-center w-100" style="max-width: 420px">
-      <!-- レシートをイメージしたアイコン -->
       <div class="fs-1 mb-3" aria-hidden="true">
         <img
           src="/img/household-ledger.png"
@@ -21,13 +20,20 @@ definePageMeta({
       </div>
       <!-- タイトル -->
       <h1 class="display-6 fw-bold mb-2">家計簿</h1>
-      <!-- サブタイトル -->
-      <p class="text-secondary mb-4">収支を記録して、暮らしをシンプルに</p>
-      <!-- Googleログインボタン -->
-      <button type="button" class="btn btn-dark w-100 py-3 fw-semibold">
-        Googleでログイン
-      </button>
-      <!-- 補足 -->
+      <p class="text-secondary mb-3">収支を記録して、暮らしをシンプルに</p>
+      <!-- ログイン -->
+      <div class="rounded-3 p-4">
+        <button
+          type="button"
+          class="btn btn-outline-dark w-100 py-3 fw-semibold"
+          @click="navigateTo('/')"
+        >
+          Googleでログイン
+        </button>
+        <p class="small text-secondary mt-4 mb-0">
+          初回ログイン時はアカウントを自動で作成します。
+        </p>
+      </div>
       <p class="small text-secondary mt-4 mb-0">
         ログインすることで、利用規約および
         <NuxtLink to="/privacy" class="text-dark">
