@@ -61,7 +61,7 @@ const chartOptions = {
 </script>
 
 <template>
-  <section class="container pb-3">
+  <section class="container pb-1">
     <div class="border rounded bg-white p-3">
       <div class="row align-items-center g-3">
         <!-- 総支出：ドーナツグラフ -->
