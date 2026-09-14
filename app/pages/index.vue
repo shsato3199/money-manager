@@ -49,7 +49,7 @@ const paymentSummaryList = ref([
 </script>
 
 <template>
-  <section class="container py-3">
+  <section class="container py-1">
     <div class="border bg-white px-1 py-1">
       <div class="row align-items-center">
         <!-- 前月 -->
