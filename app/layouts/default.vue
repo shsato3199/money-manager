@@ -3,7 +3,7 @@
 <template>
   <AppHeader />
 
-  <main>
+  <main style="padding-bottom: calc(90px + env(safe-area-inset-bottom))">
     <slot />
   </main>
 
