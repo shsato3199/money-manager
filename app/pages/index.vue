@@ -31,6 +31,21 @@ const moveNextMonth = () => moveMonth(1);
 // API実装後は月間集計APIから取得した値に置き換える。
 const fixedExpenseTotal = ref(152000);
 const variableExpenseTotal = ref(83400);
+// 固定費と変動費の合計を総支出として計算する。
+const totalExpense = computed(() => {
+  return fixedExpenseTotal.value + variableExpenseTotal.value;
+});
+//カテゴリ別集計の仮データ
+const categorySummaryList = ref([
+  { name: "食費", amount: 83400 },
+  { name: "交通費", amount: 12000 },
+  { name: "趣味", amount: 25000 },
+]);
+//支払元別集計の仮データ
+const paymentSummaryList = ref([
+  { name: "楽天カード", amount: 102000 },
+  { name: "かんぽ", amount: 83400 },
+]);
 </script>
 
 <template>
@@ -75,9 +90,18 @@ const variableExpenseTotal = ref(83400);
     </div>
   </section>
   <!-- 月間支出サマリー -->
-
   <MonthlySummaryCard
     :fixed-expense-total="fixedExpenseTotal"
     :variable-expense-total="variableExpenseTotal"
+  />
+  <!-- カテゴリ別集計サマリー -->
+  <CategorySummaryTable
+    :categories="categorySummaryList"
+    :total-expense="totalExpense"
+  />
+  <!-- 支払元別集計サマリー -->
+  <PaymentSummaryTable
+    :payment-methods="paymentSummaryList"
+    :total-expense="totalExpense"
   />
 </template>
