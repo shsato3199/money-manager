@@ -46,6 +46,136 @@ const paymentSummaryList = ref([
   { name: "楽天カード", amount: 102000 },
   { name: "かんぽ", amount: 83400 },
 ]);
+
+// 固定費支出一覧の仮データ。
+const fixedExpenseList = ref([
+  {
+    id: 1,
+    transactionDate: "2026-09-01",
+    name: "家賃",
+    categoryName: "住居費",
+    paymentMethodName: "かんぽ",
+    amount: 80000,
+  },
+  {
+    id: 2,
+    transactionDate: "2026-09-28",
+    name: "Netflix",
+    categoryName: "サブスクリプション",
+    paymentMethodName: "楽天カード",
+    amount: 990,
+  },
+  {
+    id: 1,
+    transactionDate: "2026-09-01",
+    name: "駐車場代",
+    categoryName: "住居費",
+    paymentMethodName: "かんぽ",
+    amount: 80000,
+  },
+  {
+    id: 2,
+    transactionDate: "2026-09-28",
+    name: "Spotify",
+    categoryName: "サブスクリプション",
+    paymentMethodName: "楽天カード",
+    amount: 990,
+  },
+  {
+    id: 1,
+    transactionDate: "2026-09-01",
+    name: "Amazonプライム",
+    categoryName: "住居費",
+    paymentMethodName: "かんぽ",
+    amount: 80000,
+  },
+  {
+    id: 2,
+    transactionDate: "2026-09-28",
+    name: "保険代",
+    categoryName: "サブスクリプション",
+    paymentMethodName: "楽天カード",
+    amount: 990,
+  },
+]);
+
+// 変動費支出一覧の仮データ。
+const variableExpenseList = ref([
+  {
+    id: 3,
+    transactionDate: "2026-09-05",
+    name: "スーパー",
+    categoryName: "食費",
+    paymentMethodName: "楽天カード",
+    amount: 5400,
+  },
+  {
+    id: 4,
+    transactionDate: "2026-09-10",
+    name: "電車",
+    categoryName: "交通費",
+    paymentMethodName: "現金",
+    amount: 1200,
+  },
+  {
+    id: 5,
+    transactionDate: "2026-09-12",
+    name: "業務スーパー",
+    categoryName: "食費",
+    paymentMethodName: "楽天カード",
+    amount: 5400,
+  },
+  {
+    id: 6,
+    transactionDate: "2026-09-13",
+    name: "バス",
+    categoryName: "交通費",
+    paymentMethodName: "現金",
+    amount: 1200,
+  },
+  {
+    id: 7,
+    transactionDate: "2026-09-15",
+    name: "映画",
+    categoryName: "趣味",
+    paymentMethodName: "楽天カード",
+    amount: 2500,
+  },
+  {
+    id: 8,
+    transactionDate: "2026-09-20",
+    name: "スーパー",
+    categoryName: "食費",
+    paymentMethodName: "楽天カード",
+    amount: 5400,
+  },
+  {
+    id: 9,
+    transactionDate: "2026-09-25",
+    name: "バス",
+    categoryName: "交通費",
+    paymentMethodName: "現金",
+    amount: 1200,
+  },
+]);
+
+// 固定費・変動費のどちらを開いているか管理する。
+// null      : 両方閉じる
+// FIXED     : 固定費を開く
+// VARIABLE  : 変動費を開く
+const openedExpenseType = ref(null);
+
+// 支出一覧の開閉を切り替える。
+const toggleExpenseList = (expenseType) => {
+  // すでに開いている一覧を押した場合は閉じる。
+  if (openedExpenseType.value === expenseType) {
+    openedExpenseType.value = null;
+    return;
+  }
+
+  // 別の一覧を押した場合は、そちらを開く。
+  openedExpenseType.value = expenseType;
+};
 </script>
 
 <template>
@@ -103,5 +233,20 @@ const paymentSummaryList = ref([
   <PaymentSummaryTable
     :payment-methods="paymentSummaryList"
     :total-expense="totalExpense"
+  />
+  <!-- 固定費一覧 -->
+  <ExpenseTable
+    title="固定費一覧"
+    :expenses="fixedExpenseList"
+    :is-open="openedExpenseType === 'FIXED'"
+    @toggle="toggleExpenseList('FIXED')"
+  />
+
+  <!-- 変動費一覧 -->
+  <ExpenseTable
+    title="変動費一覧"
+    :expenses="variableExpenseList"
+    :is-open="openedExpenseType === 'VARIABLE'"
+    @toggle="toggleExpenseList('VARIABLE')"
   />
 </template>
