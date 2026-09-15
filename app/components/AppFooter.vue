@@ -1,4 +1,7 @@
 <script setup>
+// 現在の画面URLを取得する。
+const route = useRoute();
+
 // 支出登録モーダルの開閉状態。
 const isExpenseEntryModalOpen = ref(false);
 
@@ -40,6 +43,7 @@ const closeExpenseEntryModal = () => {
 
         <!-- 支出登録 -->
         <button
+          :disabled="route.path !== '/'"
           type="button"
           class="btn btn-link text-dark text-decoration-none d-flex flex-column align-items-center p-0"
           aria-label="支出登録"
