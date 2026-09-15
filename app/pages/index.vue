@@ -1,47 +1,31 @@
 <script setup>
+// ========================
+// ① 状態
+// ========================
+
 // 現在日時を取得する。
 const now = new Date();
+
 // 現在の年をリアクティブな値として保持する。
 const year = ref(now.getFullYear());
+
 // 現在の月をリアクティブな値として保持する。
 // getMonth() は 0 始まりなので +1 する。
 const month = ref(now.getMonth() + 1);
-
-// 画面表示用の「YYYY年MM月」を作る。
-const displayYearMonth = computed(() => {
-  return `${year.value}年${String(month.value).padStart(2, "0")}月`;
-});
-
-// 月を移動する共通処理。
-// 前月なら -1、翌月なら 1 を渡す。
-const moveMonth = (offset) => {
-  // Date が年またぎ・月またぎを自動で補正してくれる。
-  const targetDate = new Date(year.value, month.value - 1 + offset, 1);
-  // 補正後の年をセットする。
-  year.value = targetDate.getFullYear();
-  // getMonth() は 0 始まりなので +1 する。
-  month.value = targetDate.getMonth() + 1;
-};
-// 前月へ移動する。
-const movePreviousMonth = () => moveMonth(-1);
-// 翌月へ移動する。
-const moveNextMonth = () => moveMonth(1);
 
 // 月間集計の仮データ。
 // API実装後は月間集計APIから取得した値に置き換える。
 const fixedExpenseTotal = ref(152000);
 const variableExpenseTotal = ref(83400);
-// 固定費と変動費の合計を総支出として計算する。
-const totalExpense = computed(() => {
-  return fixedExpenseTotal.value + variableExpenseTotal.value;
-});
-//カテゴリ別集計の仮データ
+
+// カテゴリ別集計の仮データ。
 const categorySummaryList = ref([
   { name: "食費", amount: 83400 },
   { name: "交通費", amount: 12000 },
   { name: "趣味", amount: 25000 },
 ]);
-//支払元別集計の仮データ
+
+// 支払元別集計の仮データ。
 const paymentSummaryList = ref([
   { name: "楽天カード", amount: 102000 },
   { name: "かんぽ", amount: 83400 },
@@ -66,7 +50,7 @@ const fixedExpenseList = ref([
     amount: 990,
   },
   {
-    id: 1,
+    id: 3,
     transactionDate: "2026-09-01",
     name: "駐車場代",
     categoryName: "住居費",
@@ -74,7 +58,7 @@ const fixedExpenseList = ref([
     amount: 80000,
   },
   {
-    id: 2,
+    id: 4,
     transactionDate: "2026-09-28",
     name: "Spotify",
     categoryName: "サブスクリプション",
@@ -82,7 +66,7 @@ const fixedExpenseList = ref([
     amount: 990,
   },
   {
-    id: 1,
+    id: 5,
     transactionDate: "2026-09-01",
     name: "Amazonプライム",
     categoryName: "住居費",
@@ -90,7 +74,7 @@ const fixedExpenseList = ref([
     amount: 80000,
   },
   {
-    id: 2,
+    id: 6,
     transactionDate: "2026-09-28",
     name: "保険代",
     categoryName: "サブスクリプション",
@@ -102,7 +86,7 @@ const fixedExpenseList = ref([
 // 変動費支出一覧の仮データ。
 const variableExpenseList = ref([
   {
-    id: 3,
+    id: 7,
     transactionDate: "2026-09-05",
     name: "スーパー",
     categoryName: "食費",
@@ -110,7 +94,7 @@ const variableExpenseList = ref([
     amount: 5400,
   },
   {
-    id: 4,
+    id: 8,
     transactionDate: "2026-09-10",
     name: "電車",
     categoryName: "交通費",
@@ -118,7 +102,7 @@ const variableExpenseList = ref([
     amount: 1200,
   },
   {
-    id: 5,
+    id: 9,
     transactionDate: "2026-09-12",
     name: "業務スーパー",
     categoryName: "食費",
@@ -126,7 +110,7 @@ const variableExpenseList = ref([
     amount: 5400,
   },
   {
-    id: 6,
+    id: 10,
     transactionDate: "2026-09-13",
     name: "バス",
     categoryName: "交通費",
@@ -134,7 +118,7 @@ const variableExpenseList = ref([
     amount: 1200,
   },
   {
-    id: 7,
+    id: 11,
     transactionDate: "2026-09-15",
     name: "映画",
     categoryName: "趣味",
@@ -142,7 +126,7 @@ const variableExpenseList = ref([
     amount: 2500,
   },
   {
-    id: 8,
+    id: 12,
     transactionDate: "2026-09-20",
     name: "スーパー",
     categoryName: "食費",
@@ -150,7 +134,7 @@ const variableExpenseList = ref([
     amount: 5400,
   },
   {
-    id: 9,
+    id: 13,
     transactionDate: "2026-09-25",
     name: "バス",
     categoryName: "交通費",
@@ -160,10 +144,47 @@ const variableExpenseList = ref([
 ]);
 
 // 固定費・変動費のどちらを開いているか管理する。
-// null      : 両方閉じる
-// FIXED     : 固定費を開く
-// VARIABLE  : 変動費を開く
+// null     : 両方閉じる
+// FIXED    : 固定費を開く
+// VARIABLE : 変動費を開く
 const openedExpenseType = ref(null);
+
+// ========================
+// ② computed
+// ========================
+
+// 画面表示用の「YYYY年MM月」を作る。
+const displayYearMonth = computed(() => {
+  return `${year.value}年${String(month.value).padStart(2, "0")}月`;
+});
+
+// 固定費と変動費の合計を総支出として計算する。
+const totalExpense = computed(() => {
+  return fixedExpenseTotal.value + variableExpenseTotal.value;
+});
+
+// ========================
+// ③ 関数
+// ========================
+
+// 月を移動する共通処理。
+// 前月なら -1、翌月なら 1 を渡す。
+const moveMonth = (offset) => {
+  // Date が年またぎ・月またぎを自動で補正してくれる。
+  const targetDate = new Date(year.value, month.value - 1 + offset, 1);
+
+  // 補正後の年をセットする。
+  year.value = targetDate.getFullYear();
+
+  // getMonth() は 0 始まりなので +1 する。
+  month.value = targetDate.getMonth() + 1;
+};
+
+// 前月へ移動する。
+const movePreviousMonth = () => moveMonth(-1);
+
+// 翌月へ移動する。
+const moveNextMonth = () => moveMonth(1);
 
 // 支出一覧の開閉を切り替える。
 const toggleExpenseList = (expenseType) => {

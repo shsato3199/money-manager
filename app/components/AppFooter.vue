@@ -1,3 +1,17 @@
+<script setup>
+// 支出登録モーダルの開閉状態。
+const isExpenseEntryModalOpen = ref(false);
+
+// 支出登録モーダルを開く。
+const openExpenseEntryModal = () => {
+  isExpenseEntryModalOpen.value = true;
+};
+
+// 支出登録モーダルを閉じる。
+const closeExpenseEntryModal = () => {
+  isExpenseEntryModalOpen.value = false;
+};
+</script>
 <template>
   <footer class="bg-white border-top fixed-bottom">
     <div class="container-fluid py-2">
@@ -25,15 +39,16 @@
         </NuxtLink>
 
         <!-- 支出登録 -->
-        <NuxtLink
-          to="/expenses/new"
-          class="text-dark text-decoration-none d-flex flex-column align-items-center"
+        <button
+          type="button"
+          class="btn btn-link text-dark text-decoration-none d-flex flex-column align-items-center p-0"
           aria-label="支出登録"
           title="支出登録"
+          @click="openExpenseEntryModal"
         >
           <i class="bi bi-plus-circle fs-4"></i>
           <span class="small">支出登録</span>
-        </NuxtLink>
+        </button>
 
         <!-- カテゴリ管理 -->
         <NuxtLink
@@ -59,4 +74,9 @@
       </div>
     </div>
   </footer>
+
+  <ExpenseEntryModal
+    :is-open="isExpenseEntryModalOpen"
+    @close="closeExpenseEntryModal"
+  />
 </template>
