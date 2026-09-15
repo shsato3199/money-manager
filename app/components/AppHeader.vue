@@ -1,5 +1,5 @@
 <template>
-  <header class="bg-white border-bottom">
+  <header class="bg-white border-bottom sticky-top">
     <div class="container-fluid py-2">
       <div class="row align-items-center">
         <!-- タイトル -->
