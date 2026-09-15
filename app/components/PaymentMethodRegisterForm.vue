@@ -10,11 +10,6 @@ const props = defineProps({
     required: true,
   },
 
-  displayOrder: {
-    type: [String, Number],
-    required: true,
-  },
-
   errors: {
     type: Object,
     required: true,
@@ -29,7 +24,6 @@ const props = defineProps({
 const emit = defineEmits([
   "update:paymentMethodName",
   "update:paymentType",
-  "update:displayOrder",
   "register",
 ]);
 </script>
@@ -41,7 +35,7 @@ const emit = defineEmits([
     <div class="card-body">
       <div class="row g-3">
         <!-- 支払元名 -->
-        <div class="col-12 col-md-5">
+        <div class="col-12 col-md-6">
           <label for="payment-method-name" class="form-label">
             支払元名
             <span class="text-danger">*</span>
@@ -66,7 +60,7 @@ const emit = defineEmits([
         </div>
 
         <!-- 種別 -->
-        <div class="col-12 col-md-4">
+        <div class="col-12 col-md-6">
           <label for="payment-type" class="form-label">
             種別
             <span class="text-danger">*</span>
@@ -94,32 +88,6 @@ const emit = defineEmits([
 
           <div v-if="errors.paymentType" class="invalid-feedback">
             {{ errors.paymentType }}
-          </div>
-        </div>
-
-        <!-- 表示順 -->
-        <div class="col-12 col-md-3">
-          <label for="display-order" class="form-label">
-            表示順
-            <span class="text-danger">*</span>
-          </label>
-
-          <input
-            id="display-order"
-            :value="displayOrder"
-            type="number"
-            min="1"
-            step="1"
-            class="form-control"
-            :class="{
-              'is-invalid': errors.displayOrder,
-            }"
-            placeholder="1"
-            @input="emit('update:displayOrder', $event.target.value)"
-          />
-
-          <div v-if="errors.displayOrder" class="invalid-feedback">
-            {{ errors.displayOrder }}
           </div>
         </div>
       </div>

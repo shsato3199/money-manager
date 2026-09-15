@@ -30,12 +30,10 @@ const paymentMethodList = ref([
 // 新規登録フォーム
 const paymentMethodName = ref("");
 const paymentType = ref("");
-const displayOrder = ref("");
 
 const errors = ref({
   paymentMethodName: "",
   paymentType: "",
-  displayOrder: "",
 });
 
 // 編集モーダル
@@ -46,7 +44,10 @@ const editingPaymentMethod = ref(null);
 const paymentTypeList = [
   { value: "CASH", label: "現金" },
   { value: "BANK", label: "銀行口座" },
-  { value: "CREDIT_CARD", label: "クレジットカード" },
+  {
+    value: "CREDIT_CARD",
+    label: "クレジットカード",
+  },
   { value: "OTHER", label: "その他" },
 ];
 
@@ -62,48 +63,27 @@ watch(paymentType, () => {
   errors.value.paymentType = "";
 });
 
-watch(displayOrder, () => {
-  errors.value.displayOrder = "";
-});
-
 // ========================
 // ③ 関数
 // ========================
-
-// 新規登録時の表示順チェック。
-// 現在3件なら、1〜4まで登録可能。
-const isValidRegisterDisplayOrder = (value) => {
-  const order = Number(value);
-  const maxOrder = paymentMethodList.value.length + 1;
-
-  return Number.isInteger(order) && order >= 1 && order <= maxOrder;
-};
 
 // 新規登録入力チェック
 const validateRegister = () => {
   errors.value = {
     paymentMethodName: "",
     paymentType: "",
-    displayOrder: "",
   };
 
   let isValid = true;
 
   if (!isRequired(paymentMethodName.value)) {
     errors.value.paymentMethodName = REQUIRED_MESSAGE;
+
     isValid = false;
   }
 
   if (!isRequired(paymentType.value)) {
     errors.value.paymentType = REQUIRED_MESSAGE;
-    isValid = false;
-  }
-
-  if (!isRequired(displayOrder.value)) {
-    errors.value.displayOrder = REQUIRED_MESSAGE;
-    isValid = false;
-  } else if (!isValidRegisterDisplayOrder(displayOrder.value)) {
-    errors.value.displayOrder = `表示順は1〜${paymentMethodList.value.length + 1}の整数で入力してください。`;
 
     isValid = false;
   }
@@ -122,31 +102,13 @@ const registerPaymentMethod = () => {
     return;
   }
 
-  const newDisplayOrder = Number(displayOrder.value);
-
-  // 新しく入る位置以降を1つ後ろへずらす。
-  //
-  // 例：
-  // 現金       1
-  // 楽天       2
-  // 横浜銀行   3
-  //
-  // 新規を2番へ登録すると
-  //
-  // 現金       1
-  // 新規       2
-  // 楽天       3
-  // 横浜銀行   4
-  paymentMethodList.value.forEach((item) => {
-    if (item.displayOrder >= newDisplayOrder) {
-      item.displayOrder += 1;
-    }
-  });
-
   const nextId =
     paymentMethodList.value.length === 0
       ? 1
       : Math.max(...paymentMethodList.value.map((item) => item.id)) + 1;
+
+  // 新規登録時は常に現在の一覧の末尾へ追加する。
+  const newDisplayOrder = paymentMethodList.value.length + 1;
 
   paymentMethodList.value.push({
     id: nextId,
@@ -155,12 +117,12 @@ const registerPaymentMethod = () => {
     displayOrder: newDisplayOrder,
   });
 
+  // 念のため表示順で並び替える。
   sortPaymentMethodList();
 
   // 登録後は入力欄を初期化
   paymentMethodName.value = "";
   paymentType.value = "";
-  displayOrder.value = "";
 };
 
 // 編集モーダルを開く
@@ -192,22 +154,7 @@ const updatePaymentMethod = (updatedPaymentMethod) => {
 
   const newDisplayOrder = updatedPaymentMethod.displayOrder;
 
-  // ========================
-  // 後ろへ移動
-  // ========================
-  //
-  // 例：
-  //
-  // 現金       1
-  // 楽天       2
-  // 横浜銀行   3
-  //
-  // 現金を 1 → 3
-  //
-  // 楽天       1
-  // 横浜銀行   2
-  // 現金       3
-  //
+  // 後ろへ移動する場合
   if (oldDisplayOrder < newDisplayOrder) {
     paymentMethodList.value.forEach((item) => {
       if (
@@ -220,22 +167,7 @@ const updatePaymentMethod = (updatedPaymentMethod) => {
     });
   }
 
-  // ========================
-  // 前へ移動
-  // ========================
-  //
-  // 例：
-  //
-  // 現金       1
-  // 楽天       2
-  // 横浜銀行   3
-  //
-  // 横浜銀行を 3 → 1
-  //
-  // 横浜銀行   1
-  // 現金       2
-  // 楽天       3
-  //
+  // 前へ移動する場合
   if (oldDisplayOrder > newDisplayOrder) {
     paymentMethodList.value.forEach((item) => {
       if (
@@ -248,12 +180,11 @@ const updatePaymentMethod = (updatedPaymentMethod) => {
     });
   }
 
-  // 編集対象そのものを更新
+  // 編集対象を更新
   paymentMethodList.value[targetIndex] = {
     ...updatedPaymentMethod,
   };
 
-  // 表示順で並び替え
   sortPaymentMethodList();
 
   closeEditModal();
@@ -282,7 +213,6 @@ const updatePaymentMethod = (updatedPaymentMethod) => {
     <PaymentMethodRegisterForm
       v-model:payment-method-name="paymentMethodName"
       v-model:payment-type="paymentType"
-      v-model:display-order="displayOrder"
       :errors="errors"
       :payment-type-list="paymentTypeList"
       @register="registerPaymentMethod"
