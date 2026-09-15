@@ -59,7 +59,7 @@ const chartOptions = {
   },
 };
 </script>
-
+<!-- 月間支出サマリー -->
 <template>
   <section class="container pb-1">
     <div class="border rounded bg-white p-3">

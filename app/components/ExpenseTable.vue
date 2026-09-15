@@ -23,7 +23,7 @@ const formatAmount = (amount) => {
   return `¥${amount.toLocaleString()}`;
 };
 </script>
-
+<!-- 固定費/変動費一覧 -->
 <template>
   <section class="container pb-1">
     <div class="border rounded bg-white">

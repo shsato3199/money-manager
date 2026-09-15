@@ -32,7 +32,7 @@ const getPaymentMethodRate = (amount) => {
   return Math.min((amount / props.totalExpense) * 100, 100);
 };
 </script>
-
+<!-- 支払元別集計サマリー -->
 <template>
   <section class="container pb-1">
     <div class="border rounded bg-white">
