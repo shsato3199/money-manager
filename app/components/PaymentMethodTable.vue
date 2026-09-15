@@ -11,7 +11,6 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["edit"]);
-
 const getPaymentTypeLabel = (value) => {
   return (
     props.paymentTypeList.find((type) => type.value === value)?.label ?? ""

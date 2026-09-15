@@ -78,13 +78,11 @@ const validateRegister = () => {
 
   if (!isRequired(paymentMethodName.value)) {
     errors.value.paymentMethodName = REQUIRED_MESSAGE;
-
     isValid = false;
   }
 
   if (!isRequired(paymentType.value)) {
     errors.value.paymentType = REQUIRED_MESSAGE;
-
     isValid = false;
   }
 
@@ -106,7 +104,6 @@ const registerPaymentMethod = () => {
     paymentMethodList.value.length === 0
       ? 1
       : Math.max(...paymentMethodList.value.map((item) => item.id)) + 1;
-
   // 新規登録時は常に現在の一覧の末尾へ追加する。
   const newDisplayOrder = paymentMethodList.value.length + 1;
 
@@ -130,7 +127,6 @@ const openEditModal = (paymentMethod) => {
   editingPaymentMethod.value = {
     ...paymentMethod,
   };
-
   isEditModalOpen.value = true;
 };
 
@@ -151,7 +147,6 @@ const updatePaymentMethod = (updatedPaymentMethod) => {
   }
 
   const oldDisplayOrder = paymentMethodList.value[targetIndex].displayOrder;
-
   const newDisplayOrder = updatedPaymentMethod.displayOrder;
 
   // 後ろへ移動する場合
@@ -184,9 +179,7 @@ const updatePaymentMethod = (updatedPaymentMethod) => {
   paymentMethodList.value[targetIndex] = {
     ...updatedPaymentMethod,
   };
-
   sortPaymentMethodList();
-
   closeEditModal();
 };
 </script>

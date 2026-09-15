@@ -54,11 +54,8 @@ watch(
     }
 
     paymentMethodName.value = paymentMethod.name;
-
     paymentType.value = paymentMethod.paymentType;
-
     displayOrder.value = paymentMethod.displayOrder;
-
     errors.value = {
       paymentMethodName: "",
       paymentType: "",
@@ -91,7 +88,6 @@ watch(displayOrder, () => {
 // 現在3件なら1〜3まで。
 const isValidDisplayOrder = (value) => {
   const order = Number(value);
-
   return (
     Number.isInteger(order) && order >= 1 && order <= props.maxDisplayOrder
   );
@@ -109,25 +105,21 @@ const validate = () => {
   // 支払元名
   if (!isRequired(paymentMethodName.value)) {
     errors.value.paymentMethodName = REQUIRED_MESSAGE;
-
     isValid = false;
   }
 
   // 種別
   if (!isRequired(paymentType.value)) {
     errors.value.paymentType = REQUIRED_MESSAGE;
-
     isValid = false;
   }
 
   // 表示順
   if (!isRequired(displayOrder.value)) {
     errors.value.displayOrder = REQUIRED_MESSAGE;
-
     isValid = false;
   } else if (!isValidDisplayOrder(displayOrder.value)) {
     errors.value.displayOrder = `表示順は1〜${props.maxDisplayOrder}の整数で入力してください。`;
-
     isValid = false;
   }
 
@@ -147,11 +139,8 @@ const updatePaymentMethod = () => {
 
   emit("update", {
     id: props.paymentMethod.id,
-
     name: paymentMethodName.value.trim(),
-
     paymentType: paymentType.value,
-
     displayOrder: Number(displayOrder.value),
   });
 };
