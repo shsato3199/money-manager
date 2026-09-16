@@ -182,6 +182,33 @@ const updatePaymentMethod = (updatedPaymentMethod) => {
   sortPaymentMethodList();
   closeEditModal();
 };
+// 支払元を削除する。
+const deletePaymentMethod = (paymentMethodId) => {
+  const targetIndex = paymentMethodList.value.findIndex(
+    (item) => item.id === paymentMethodId,
+  );
+
+  if (targetIndex === -1) {
+    return;
+  }
+
+  const deletedDisplayOrder = paymentMethodList.value[targetIndex].displayOrder;
+
+  // 対象データを一覧から削除する。
+  paymentMethodList.value.splice(targetIndex, 1);
+
+  // 削除した表示順より後ろのデータを
+  // 1つずつ前へ詰める。
+  paymentMethodList.value.forEach((item) => {
+    if (item.displayOrder > deletedDisplayOrder) {
+      item.displayOrder -= 1;
+    }
+  });
+
+  sortPaymentMethodList();
+
+  closeEditModal();
+};
 </script>
 
 <template>
@@ -220,5 +247,6 @@ const updatePaymentMethod = (updatedPaymentMethod) => {
     :max-display-order="paymentMethodList.length"
     @close="closeEditModal"
     @update="updatePaymentMethod"
+    @delete="deletePaymentMethod"
   />
 </template>
