@@ -37,7 +37,6 @@ const displayOrder = ref("");
 
 // 確認モーダルの表示状態。
 // null    : 非表示
-// UPDATE  : 更新確認
 // DELETE  : 削除確認
 const confirmationType = ref(null);
 
@@ -128,7 +127,6 @@ const validate = () => {
     isValid = false;
   } else if (!isValidDisplayOrder(displayOrder.value)) {
     errors.value.displayOrder = `表示順は1〜${props.maxDisplayOrder}の整数で入力してください。`;
-
     isValid = false;
   }
 
@@ -139,16 +137,6 @@ const validate = () => {
 const closeModal = () => {
   confirmationType.value = null;
   emit("close");
-};
-
-// 更新確認モーダルを開く
-const openUpdateConfirmation = () => {
-  // 更新時は先に入力チェックする。
-  if (!validate() || !props.paymentMethod) {
-    return;
-  }
-
-  confirmationType.value = "UPDATE";
 };
 
 // 削除確認モーダルを開く
@@ -167,7 +155,7 @@ const closeConfirmation = () => {
 
 // 更新確定
 const updatePaymentMethod = () => {
-  if (!props.paymentMethod) {
+  if (!validate() || !props.paymentMethod) {
     return;
   }
 
@@ -177,8 +165,6 @@ const updatePaymentMethod = () => {
     paymentType: paymentType.value,
     displayOrder: Number(displayOrder.value),
   });
-
-  confirmationType.value = null;
 };
 
 // 削除確定
@@ -325,7 +311,7 @@ const deletePaymentMethod = () => {
                 <button
                   type="button"
                   class="btn btn-primary"
-                  @click="openUpdateConfirmation"
+                  @click="updatePaymentMethod"
                 >
                   更新
                 </button>
@@ -335,9 +321,9 @@ const deletePaymentMethod = () => {
         </div>
       </div>
 
-      <!-- 更新・削除確認モーダル -->
+      <!-- 削除確認モーダル -->
       <div
-        v-if="confirmationType"
+        v-if="confirmationType === 'DELETE'"
         class="modal fade show"
         style="display: block; z-index: 1070"
         tabindex="-1"
@@ -350,10 +336,7 @@ const deletePaymentMethod = () => {
           style="max-width: 360px"
         >
           <div class="modal-content shadow border border-secondary">
-            <!-- 更新時だけタイトル表示 -->
-            <div v-if="confirmationType === 'UPDATE'" class="modal-header">
-              <h5 class="modal-title">更新確認</h5>
-
+            <div class="d-flex justify-content-end px-3 pt-3">
               <button
                 type="button"
                 class="btn-close"
@@ -362,30 +345,12 @@ const deletePaymentMethod = () => {
               ></button>
             </div>
 
-            <!-- 削除時はタイトルなし -->
-            <div v-else class="d-flex justify-content-end px-3 pt-3">
-              <button
-                type="button"
-                class="btn-close"
-                aria-label="閉じる"
-                @click="closeConfirmation"
-              ></button>
-            </div>
-
-            <!-- 本文 -->
             <div class="modal-body text-center pt-2 pb-4">
-              <!-- 更新確認 -->
-              <p v-if="confirmationType === 'UPDATE'" class="mb-0">
-                支払元を更新しますか？
-              </p>
-
-              <!-- 削除確認 -->
-              <p v-else class="mb-0 fw-semibold">
+              <p class="mb-0 fw-semibold">
                 「{{ paymentMethodName }}」を削除しますか？
               </p>
             </div>
 
-            <!-- フッター -->
             <div class="modal-footer justify-content-center">
               <button
                 type="button"
@@ -396,16 +361,6 @@ const deletePaymentMethod = () => {
               </button>
 
               <button
-                v-if="confirmationType === 'UPDATE'"
-                type="button"
-                class="btn btn-primary"
-                @click="updatePaymentMethod"
-              >
-                更新する
-              </button>
-
-              <button
-                v-else
                 type="button"
                 class="btn btn-danger"
                 @click="deletePaymentMethod"
@@ -421,11 +376,11 @@ const deletePaymentMethod = () => {
       <div class="modal-backdrop fade show"></div>
 
       <!--
-        更新・削除確認中は、
+        削除確認中は、
         編集モーダルの上からさらに背景を暗くする。
       -->
       <div
-        v-if="confirmationType"
+        v-if="confirmationType === 'DELETE'"
         class="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50"
         style="z-index: 1060"
       ></div>
