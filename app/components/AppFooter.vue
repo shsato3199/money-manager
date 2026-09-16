@@ -32,7 +32,7 @@ const closeExpenseEntryModal = () => {
 
         <!-- 固定費管理 -->
         <NuxtLink
-          to="/fixed-expenses"
+          to="/settings/fixed-expenses"
           class="text-dark text-decoration-none d-flex flex-column align-items-center"
           aria-label="固定費管理"
           title="固定費管理"

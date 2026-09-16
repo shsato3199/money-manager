@@ -11,6 +11,15 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["edit"]);
+
+// 初期表示は閉じる。
+const isOpen = ref(false);
+
+// 開閉切り替え。
+const toggleAccordion = () => {
+  isOpen.value = !isOpen.value;
+};
+
 const getPaymentTypeLabel = (value) => {
   return (
     props.paymentTypeList.find((type) => type.value === value)?.label ?? ""
@@ -24,9 +33,17 @@ const requestEdit = (paymentMethod) => {
 
 <template>
   <section class="card shadow-sm mb-4">
-    <div class="card-header bg-white fw-bold">登録済み支払元</div>
+    <button
+      type="button"
+      class="card-header bg-white fw-bold w-100 d-flex align-items-center justify-content-between border-0 text-start"
+      :aria-expanded="isOpen"
+      @click="toggleAccordion"
+    >
+      <span>登録済み支払元</span>
+      <i class="bi" :class="isOpen ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+    </button>
 
-    <div class="card-body p-0">
+    <div v-if="isOpen" class="card-body p-0">
       <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
           <thead class="table-light">
