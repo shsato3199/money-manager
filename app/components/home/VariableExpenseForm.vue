@@ -117,6 +117,9 @@ defineExpose({
 
 <template>
   <div>
+    <div class="alert alert-info py-2 mb-3" role="alert">
+      過去の支出や、支払日が決まっている今後の支出も登録できます。
+    </div>
     <!-- 支出日 -->
     <div class="mb-3">
       <label for="variable-expense-date" class="form-label">

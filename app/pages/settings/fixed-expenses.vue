@@ -213,7 +213,10 @@ const deleteFixedExpense = (fixedExpenseId) => {
 
       <p class="text-body-secondary mb-0">毎月発生する固定費を管理します。</p>
     </div>
-
+    <!-- 固定費終了時の注意書き -->
+    <div class="alert alert-info mb-1" role="alert">
+      固定費が発生しなくなった場合は、編集画面から終了年月を登録してください。
+    </div>
     <!-- 固定費一覧 -->
     <FixedExpensesFixedExpenseSettingTable
       :fixed-expense-list="fixedExpenseList"

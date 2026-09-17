@@ -389,6 +389,8 @@ const registerFixedExpense = () => {
           <div v-if="errors.endYearMonth" class="invalid-feedback">
             {{ errors.endYearMonth }}
           </div>
+
+          <div class="form-text">終了年月がない場合は未入力で構いません。</div>
         </div>
 
         <!-- 毎月自動生成 -->
