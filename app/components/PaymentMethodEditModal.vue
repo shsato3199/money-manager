@@ -39,7 +39,7 @@ const displayOrder = ref("");
 // null    : 非表示
 // DELETE  : 削除確認
 const confirmationType = ref(null);
-
+const deleteErrorMessage = ref("");
 const errors = ref({
   paymentMethodName: "",
   paymentType: "",
@@ -145,6 +145,14 @@ const openDeleteConfirmation = () => {
     return;
   }
 
+  // 支払元は最低1件必要なため、最後の1件は削除できない。
+  if (props.maxDisplayOrder <= 1) {
+    deleteErrorMessage.value =
+      "支払元をすべて削除することはできません。名称などの変更は可能です。";
+    return;
+  }
+
+  deleteErrorMessage.value = "";
   confirmationType.value = "DELETE";
 };
 

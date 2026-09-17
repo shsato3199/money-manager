@@ -184,6 +184,11 @@ const updatePaymentMethod = (updatedPaymentMethod) => {
 };
 // 支払元を削除する。
 const deletePaymentMethod = (paymentMethodId) => {
+  // 支払元は最低1件残す。
+  if (paymentMethodList.value.length <= 1) {
+    return;
+  }
+
   const targetIndex = paymentMethodList.value.findIndex(
     (item) => item.id === paymentMethodId,
   );
@@ -223,7 +228,7 @@ const deletePaymentMethod = (paymentMethodId) => {
     </div>
 
     <!-- 支払元一覧 -->
-    <PaymentMethodTable
+    <PaymentMethodSettingTable
       :payment-method-list="paymentMethodList"
       :payment-type-list="paymentTypeList"
       @edit="openEditModal"
