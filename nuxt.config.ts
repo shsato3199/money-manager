@@ -11,14 +11,18 @@ export default defineNuxtConfig({
       ],
     },
   },
-  compatibilityDate: '2025-07-15',
+  runtimeConfig: {
+    public: {
+      apiBaseUrl: "",
+    },
+  },
+
+  compatibilityDate: "2025-07-15",
   devtools: { enabled: true },
 
   css: [
-    'bootstrap/dist/css/bootstrap.min.css',
-    'bootstrap-icons/font/bootstrap-icons.css'
+    "bootstrap/dist/css/bootstrap.min.css",
+    "bootstrap-icons/font/bootstrap-icons.css",
   ],
-  modules: [
-    '@pinia/nuxt'
-  ]
-})
+  modules: ["@pinia/nuxt"],
+});
