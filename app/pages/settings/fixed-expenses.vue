@@ -226,7 +226,7 @@ const deleteFixedExpense = (fixedExpenseId) => {
       @register="registerFixedExpense"
     />
     <!-- 編集モーダル -->
-    <FixedExpensesFixedExpenseEditModal
+    <FixedExpensesFixedExpenseSettingEditModal
       :is-open="isEditModalOpen"
       :fixed-expense="editingFixedExpense"
       :category-list="categoryList"
