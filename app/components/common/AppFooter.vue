@@ -79,7 +79,7 @@ const closeExpenseEntryModal = () => {
     </div>
   </footer>
 
-  <ExpenseEntryModal
+  <HomeExpenseEntryModal
     :is-open="isExpenseEntryModalOpen"
     @close="closeExpenseEntryModal"
   />

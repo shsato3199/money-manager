@@ -162,13 +162,16 @@ const deleteCategory = (categoryId) => {
     </div>
 
     <!-- 登録済みカテゴリ -->
-    <CategorySettingTable :category-list="categoryList" @edit="openEditModal" />
+    <CategoriesCategorySettingTable
+      :category-list="categoryList"
+      @edit="openEditModal"
+    />
 
     <!-- カテゴリ登録 -->
-    <CategoryRegisterForm @register="registerCategory" />
+    <CategoriesCategoryRegisterForm @register="registerCategory" />
 
     <!-- 編集モーダル -->
-    <CategoryEditModal
+    <CategoriesCategoryEditModal
       :is-open="isEditModalOpen"
       :category="editingCategory"
       :max-display-order="categoryList.length"

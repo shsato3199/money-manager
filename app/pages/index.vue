@@ -241,22 +241,22 @@ const toggleExpenseList = (expenseType) => {
     </div>
   </section>
   <!-- 月間支出サマリー -->
-  <MonthlySummaryCard
+  <HomeMonthlySummaryCard
     :fixed-expense-total="fixedExpenseTotal"
     :variable-expense-total="variableExpenseTotal"
   />
   <!-- カテゴリ別集計サマリー -->
-  <CategorySummaryTable
+  <HomeCategorySummaryTable
     :categories="categorySummaryList"
     :total-expense="totalExpense"
   />
   <!-- 支払元別集計サマリー -->
-  <PaymentSummaryTable
+  <HomePaymentSummaryTable
     :payment-methods="paymentSummaryList"
     :total-expense="totalExpense"
   />
   <!-- 固定費一覧 -->
-  <ExpenseTable
+  <HomeExpenseTable
     title="固定費一覧"
     :expenses="fixedExpenseList"
     :is-open="openedExpenseType === 'FIXED'"
@@ -264,7 +264,7 @@ const toggleExpenseList = (expenseType) => {
   />
 
   <!-- 変動費一覧 -->
-  <ExpenseTable
+  <HomeExpenseTable
     title="変動費一覧"
     :expenses="variableExpenseList"
     :is-open="openedExpenseType === 'VARIABLE'"

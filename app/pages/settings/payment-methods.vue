@@ -228,14 +228,14 @@ const deletePaymentMethod = (paymentMethodId) => {
     </div>
 
     <!-- 支払元一覧 -->
-    <PaymentMethodSettingTable
+    <PaymentMethodsPaymentMethodSettingTable
       :payment-method-list="paymentMethodList"
       :payment-type-list="paymentTypeList"
       @edit="openEditModal"
     />
 
     <!-- 新規登録 -->
-    <PaymentMethodRegisterForm
+    <PaymentMethodsPaymentMethodRegisterForm
       v-model:payment-method-name="paymentMethodName"
       v-model:payment-type="paymentType"
       :errors="errors"
@@ -245,7 +245,7 @@ const deletePaymentMethod = (paymentMethodId) => {
   </main>
 
   <!-- 編集モーダル -->
-  <PaymentMethodEditModal
+  <PaymentMethodsPaymentMethodEditModal
     :is-open="isEditModalOpen"
     :payment-method="editingPaymentMethod"
     :payment-type-list="paymentTypeList"

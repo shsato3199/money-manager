@@ -215,18 +215,18 @@ const deleteFixedExpense = (fixedExpenseId) => {
     </div>
 
     <!-- 固定費一覧 -->
-    <FixedExpenseSettingTable
+    <FixedExpensesFixedExpenseSettingTable
       :fixed-expense-list="fixedExpenseList"
       @edit="openEditModal"
     />
     <!-- 固定費新規登録 -->
-    <FixedExpenseRegisterForm
+    <FixedExpensesFixedExpenseRegisterForm
       :category-list="categoryList"
       :payment-method-list="paymentMethodList"
       @register="registerFixedExpense"
     />
     <!-- 編集モーダル -->
-    <FixedExpenseSettingEditModal
+    <FixedExpensesFixedExpenseEditModal
       :is-open="isEditModalOpen"
       :fixed-expense="editingFixedExpense"
       :category-list="categoryList"

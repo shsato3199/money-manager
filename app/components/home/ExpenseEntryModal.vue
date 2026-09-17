@@ -103,12 +103,12 @@ const handleRegister = () => {
                 </button>
               </div>
 
-              <VariableExpenseForm
+              <HomeVariableExpenseForm
                 v-if="selectedExpenseType === 'VARIABLE'"
                 ref="variableExpenseFormRef"
               />
 
-              <FixedExpenseForm v-else ref="fixedExpenseFormRef" />
+              <FixedExpensesFixedExpenseForm v-else ref="fixedExpenseFormRef" />
             </div>
 
             <!-- フッター -->
