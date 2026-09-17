@@ -16,12 +16,8 @@ const emit = defineEmits(["close"]);
 // ② 状態
 // ========================
 
-// 初期表示は変動費。
-const selectedExpenseType = ref("VARIABLE");
-
-// 変動費・固定費フォームのコンポーネント参照。
+// 変動費フォームのコンポーネント参照。
 const variableExpenseFormRef = ref(null);
-const fixedExpenseFormRef = ref(null);
 
 // ========================
 // ③ 関数
@@ -34,10 +30,7 @@ const closeModal = () => {
 
 // 登録ボタン押下時。
 const handleRegister = () => {
-  const isValid =
-    selectedExpenseType.value === "VARIABLE"
-      ? variableExpenseFormRef.value?.validate()
-      : fixedExpenseFormRef.value?.validate();
+  const isValid = variableExpenseFormRef.value?.validate();
 
   // 入力エラーがある場合は終了。
   if (!isValid) {
@@ -77,38 +70,7 @@ const handleRegister = () => {
 
             <!-- 本文 -->
             <div class="modal-body">
-              <div class="btn-group w-100 mb-3" role="group">
-                <button
-                  class="btn"
-                  :class="
-                    selectedExpenseType === 'VARIABLE'
-                      ? 'btn-primary'
-                      : 'btn-outline-primary'
-                  "
-                  @click="selectedExpenseType = 'VARIABLE'"
-                >
-                  変動費
-                </button>
-
-                <button
-                  class="btn"
-                  :class="
-                    selectedExpenseType === 'FIXED'
-                      ? 'btn-primary'
-                      : 'btn-outline-primary'
-                  "
-                  @click="selectedExpenseType = 'FIXED'"
-                >
-                  固定費
-                </button>
-              </div>
-
-              <HomeVariableExpenseForm
-                v-if="selectedExpenseType === 'VARIABLE'"
-                ref="variableExpenseFormRef"
-              />
-
-              <FixedExpensesFixedExpenseForm v-else ref="fixedExpenseFormRef" />
+              <HomeVariableExpenseForm ref="variableExpenseFormRef" />
             </div>
 
             <!-- フッター -->
