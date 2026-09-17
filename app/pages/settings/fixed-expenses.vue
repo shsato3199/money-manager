@@ -174,6 +174,11 @@ const updateFixedExpense = (updatedFixedExpense) => {
 
 // 固定費設定を削除する。
 const deleteFixedExpense = (fixedExpenseId) => {
+  // 固定費は最低1件残す。
+  if (fixedExpenseList.value.length <= 1) {
+    return;
+  }
+
   const targetIndex = fixedExpenseList.value.findIndex(
     (item) => item.id === fixedExpenseId,
   );

@@ -58,6 +58,8 @@ const displayOrder = ref("");
 // null   : 非表示
 // DELETE : 削除確認
 const confirmationType = ref(null);
+// 最後の1件を削除しようとした場合のエラーメッセージ。
+const deleteErrorMessage = ref("");
 
 const errors = ref({
   fixedExpenseName: "",
@@ -106,6 +108,7 @@ watch(
       displayOrder: "",
     };
     confirmationType.value = null;
+    deleteErrorMessage.value = "";
   },
   {
     immediate: true,
@@ -249,6 +252,7 @@ const validate = () => {
 // 編集モーダルを閉じる。
 const closeModal = () => {
   confirmationType.value = null;
+  deleteErrorMessage.value = "";
   emit("close");
 };
 
@@ -257,6 +261,13 @@ const openDeleteConfirmation = () => {
   if (!props.fixedExpense) {
     return;
   }
+  // 固定費は最低1件必要なため、最後の1件は削除できない。
+  if (props.maxDisplayOrder <= 1) {
+    deleteErrorMessage.value =
+      "固定費をすべて削除することはできません。名称などの変更は可能です。";
+    return;
+  }
+  deleteErrorMessage.value = "";
   confirmationType.value = "DELETE";
 };
 
@@ -580,6 +591,13 @@ const deleteFixedExpense = () => {
               >
                 削除
               </button>
+
+              <div
+                v-if="deleteErrorMessage"
+                class="text-danger small ms-3 me-auto"
+              >
+                {{ deleteErrorMessage }}
+              </div>
 
               <div class="d-flex gap-2">
                 <button
