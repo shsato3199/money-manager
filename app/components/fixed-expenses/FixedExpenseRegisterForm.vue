@@ -420,7 +420,7 @@ const registerFixedExpense = () => {
             }"
             rows="3"
             maxlength="500"
-            placeholder="契約内容などの補足情報があれば入力してください"
+            placeholder="補足情報があれば入力してください"
           ></textarea>
 
           <div v-if="errors.memo" class="invalid-feedback">
