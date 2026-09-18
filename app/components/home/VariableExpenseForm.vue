@@ -7,6 +7,24 @@ import {
   isPositiveInteger,
   isWithinMaxLength,
 } from "~/utils/validation";
+
+// ========================
+// ① props
+// ========================
+
+// 編集する変動費。
+// 新規登録時はnull。
+const props = defineProps({
+  expense: {
+    type: Object,
+    default: null,
+  },
+});
+
+// ========================
+// ② 状態
+// ========================
+
 // 変動費フォームの入力値。
 const expenseDate = ref("");
 const categoryId = ref("");
@@ -40,6 +58,21 @@ const paymentMethodList = ref([
   { id: 3, name: "かんぽ" },
 ]);
 
+// ========================
+// ③ watch
+// ========================
+
+// 編集対象が変更されたらフォームへ値を設定する。
+watch(
+  () => props.expense,
+  (expense) => {
+    setFormValues(expense);
+  },
+  {
+    immediate: true,
+  },
+);
+
 // 入力値が変更されたら、対象項目のエラーを消す。
 watch(expenseDate, () => {
   errors.value.expenseDate = "";
@@ -60,6 +93,31 @@ watch(paymentMethodId, () => {
 watch(memo, () => {
   errors.value.memo = "";
 });
+
+// ========================
+// ④ 関数
+// ========================
+
+// 編集対象の値をフォームへ設定する。
+// 新規登録時は空欄にする。
+function setFormValues(expense) {
+  expenseDate.value = expense?.transactionDate ?? "";
+  categoryId.value = expense?.categoryId ?? "";
+  amount.value = expense?.amount ?? "";
+  paymentMethodId.value = expense?.paymentMethodId ?? "";
+  transactionName.value = expense?.name ?? "";
+  shopName.value = expense?.shopName ?? "";
+  memo.value = expense?.memo ?? "";
+
+  // エラーも初期化する。
+  errors.value = {
+    expenseDate: "",
+    categoryId: "",
+    amount: "",
+    paymentMethodId: "",
+    memo: "",
+  };
+}
 
 // 入力内容をチェックする。
 const validate = () => {
@@ -109,9 +167,23 @@ const validate = () => {
   return isValid;
 };
 
-// 親コンポーネントからvalidate()を呼べるようにする。
+// フォームの入力値を親コンポーネントへ返す。
+const getFormData = () => {
+  return {
+    transactionDate: expenseDate.value,
+    categoryId: Number(categoryId.value),
+    amount: Number(amount.value),
+    paymentMethodId: Number(paymentMethodId.value),
+    name: transactionName.value,
+    shopName: shopName.value,
+    memo: memo.value,
+  };
+};
+
+// 親コンポーネントから呼べるようにする。
 defineExpose({
   validate,
+  getFormData,
 });
 </script>
 
@@ -120,6 +192,7 @@ defineExpose({
     <div class="alert alert-info py-2 mb-3" role="alert">
       過去の支出や、支払日が決まっている今後の支出も登録できます。
     </div>
+
     <!-- 支出日 -->
     <div class="mb-3">
       <label for="variable-expense-date" class="form-label">

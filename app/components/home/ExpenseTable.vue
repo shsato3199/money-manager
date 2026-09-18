@@ -15,14 +15,15 @@ const props = defineProps({
   },
 });
 
-// 親コンポーネント(index.vue)へ開閉要求を通知する。
-const emit = defineEmits(["toggle"]);
+// 親コンポーネント(index.vue)へ通知する。
+const emit = defineEmits(["toggle", "edit"]);
 
 // 金額を「¥xx,xxx」の形式で表示する。
 const formatAmount = (amount) => {
   return `¥${amount.toLocaleString()}`;
 };
 </script>
+
 <!-- 固定費/変動費一覧 -->
 <template>
   <section class="container pb-1">
@@ -46,8 +47,21 @@ const formatAmount = (amount) => {
         <div
           v-for="expense in expenses"
           :key="expense.id"
-          class="row align-items-center g-2 px-3 py-2 border-bottom"
+          class="row align-items-center g-2 px-2 py-2 border-bottom"
         >
+          <!-- 変動費のみ左側に編集ボタンを表示 -->
+          <div v-if="title === '変動費一覧'" class="col-1 text-start">
+            <button
+              type="button"
+              class="btn btn-link btn-sm text-secondary p-0"
+              aria-label="支出を編集"
+              title="編集"
+              @click="emit('edit', expense)"
+            >
+              <i class="bi bi-pencil-square"></i>
+            </button>
+          </div>
+
           <!-- 支出日 -->
           <div class="col-3 col-md-2">
             <span class="small text-secondary">
@@ -56,7 +70,11 @@ const formatAmount = (amount) => {
           </div>
 
           <!-- 支出内容 -->
-          <div class="col-5 col-md-6">
+          <div
+            :class="
+              title === '変動費一覧' ? 'col-5 col-md-6' : 'col-5 col-md-6'
+            "
+          >
             <div class="fw-semibold small">
               {{ expense.name }}
             </div>
@@ -69,7 +87,11 @@ const formatAmount = (amount) => {
           </div>
 
           <!-- 金額 -->
-          <div class="col-4 text-end">
+          <div
+            :class="
+              title === '変動費一覧' ? 'col-3 text-end' : 'col-4 text-end'
+            "
+          >
             <span class="fw-bold">
               {{ formatAmount(expense.amount) }}
             </span>

@@ -8,9 +8,16 @@ const props = defineProps({
     type: Boolean,
     required: true,
   },
+
+  // 編集する変動費。
+  // 新規登録時はnull。
+  expense: {
+    type: Object,
+    default: null,
+  },
 });
 
-const emit = defineEmits(["close"]);
+const emit = defineEmits(["close", "register", "update"]);
 
 // ========================
 // ② 状態
@@ -20,7 +27,16 @@ const emit = defineEmits(["close"]);
 const variableExpenseFormRef = ref(null);
 
 // ========================
-// ③ 関数
+// ③ computed
+// ========================
+
+// 編集対象がある場合は編集モード。
+const isEditMode = computed(() => {
+  return props.expense !== null;
+});
+
+// ========================
+// ④ 関数
 // ========================
 
 // モーダルを閉じる。
@@ -28,7 +44,7 @@ const closeModal = () => {
   emit("close");
 };
 
-// 登録ボタン押下時。
+// 登録・修正ボタン押下時。
 const handleRegister = () => {
   const isValid = variableExpenseFormRef.value?.validate();
 
@@ -37,9 +53,24 @@ const handleRegister = () => {
     return;
   }
 
-  // TODO:
-  // API接続時に登録処理を書く。
-  console.log("入力チェックOK");
+  // フォームの入力値を取得する。
+  const formData = variableExpenseFormRef.value.getFormData();
+
+  // 編集の場合。
+  if (isEditMode.value) {
+    emit("update", {
+      ...props.expense,
+      ...formData,
+    });
+
+    closeModal();
+    return;
+  }
+
+  // 新規登録の場合。
+  emit("register", formData);
+
+  closeModal();
 };
 </script>
 
@@ -59,7 +90,9 @@ const handleRegister = () => {
           <div class="modal-content shadow">
             <!-- ヘッダー -->
             <div class="modal-header">
-              <h5 class="modal-title">支出登録</h5>
+              <h5 class="modal-title">
+                {{ isEditMode ? "支出修正" : "支出登録" }}
+              </h5>
 
               <button
                 type="button"
@@ -70,7 +103,10 @@ const handleRegister = () => {
 
             <!-- 本文 -->
             <div class="modal-body">
-              <HomeVariableExpenseForm ref="variableExpenseFormRef" />
+              <HomeVariableExpenseForm
+                ref="variableExpenseFormRef"
+                :expense="expense"
+              />
             </div>
 
             <!-- フッター -->
@@ -80,7 +116,7 @@ const handleRegister = () => {
               </button>
 
               <button class="btn btn-primary" @click="handleRegister">
-                登録
+                {{ isEditMode ? "修正" : "登録" }}
               </button>
             </div>
           </div>

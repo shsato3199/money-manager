@@ -84,62 +84,91 @@ const fixedExpenseList = ref([
 ]);
 
 // 変動費支出一覧の仮データ。
+// API実装後は支出一覧APIから取得した値に置き換える。
 const variableExpenseList = ref([
   {
     id: 7,
     transactionDate: "2026-09-05",
     name: "スーパー",
+    categoryId: 1,
     categoryName: "食費",
+    paymentMethodId: 2,
     paymentMethodName: "楽天カード",
     amount: 5400,
+    shopName: "スーパー",
+    memo: "",
   },
   {
     id: 8,
     transactionDate: "2026-09-10",
     name: "電車",
+    categoryId: 3,
     categoryName: "交通費",
+    paymentMethodId: 1,
     paymentMethodName: "現金",
     amount: 1200,
+    shopName: "",
+    memo: "",
   },
   {
     id: 9,
     transactionDate: "2026-09-12",
     name: "業務スーパー",
+    categoryId: 1,
     categoryName: "食費",
+    paymentMethodId: 2,
     paymentMethodName: "楽天カード",
     amount: 5400,
+    shopName: "業務スーパー",
+    memo: "",
   },
   {
     id: 10,
     transactionDate: "2026-09-13",
     name: "バス",
+    categoryId: 3,
     categoryName: "交通費",
+    paymentMethodId: 1,
     paymentMethodName: "現金",
     amount: 1200,
+    shopName: "",
+    memo: "",
   },
   {
     id: 11,
     transactionDate: "2026-09-15",
     name: "映画",
+    categoryId: 4,
     categoryName: "趣味",
+    paymentMethodId: 2,
     paymentMethodName: "楽天カード",
     amount: 2500,
+    shopName: "",
+    memo: "",
   },
   {
     id: 12,
     transactionDate: "2026-09-20",
     name: "スーパー",
+    categoryId: 1,
     categoryName: "食費",
+    paymentMethodId: 2,
     paymentMethodName: "楽天カード",
     amount: 5400,
+    shopName: "スーパー",
+    memo: "",
   },
   {
     id: 13,
     transactionDate: "2026-09-25",
     name: "バス",
+    categoryId: 3,
     categoryName: "交通費",
+    paymentMethodId: 1,
     paymentMethodName: "現金",
     amount: 1200,
+    shopName: "",
+    memo: "",
   },
 ]);
 
@@ -149,6 +178,12 @@ const variableExpenseList = ref([
 // VARIABLE : 変動費を開く
 const openedExpenseType = ref(null);
 
+// 支出登録・編集モーダルの開閉状態。
+const isExpenseModalOpen = ref(false);
+
+// 編集中の変動費。
+// 新規登録時はnull。
+const editingVariableExpense = ref(null);
 // ========================
 // ② computed
 // ========================
@@ -196,6 +231,62 @@ const toggleExpenseList = (expenseType) => {
 
   // 別の一覧を押した場合は、そちらを開く。
   openedExpenseType.value = expenseType;
+};
+// 変動費編集モーダルを開く。
+const openVariableExpenseEditModal = (expense) => {
+  editingVariableExpense.value = {
+    ...expense,
+  };
+
+  isExpenseModalOpen.value = true;
+};
+
+// 支出登録・編集モーダルを閉じる。
+const closeExpenseModal = () => {
+  isExpenseModalOpen.value = false;
+  editingVariableExpense.value = null;
+};
+
+// 変動費の編集内容を一覧へ反映する。
+const updateVariableExpense = (updatedExpense) => {
+  const targetIndex = variableExpenseList.value.findIndex(
+    (item) => item.id === updatedExpense.id,
+  );
+
+  if (targetIndex === -1) {
+    return;
+  }
+
+  // 現在は仮データなので、
+  // カテゴリ名・支払元名はIDから取得する。
+  const categoryList = [
+    { id: 1, name: "食費" },
+    { id: 2, name: "日用品" },
+    { id: 3, name: "交通費" },
+    { id: 4, name: "趣味" },
+  ];
+
+  const paymentMethodList = [
+    { id: 1, name: "現金" },
+    { id: 2, name: "楽天カード" },
+    { id: 3, name: "かんぽ" },
+  ];
+
+  const category = categoryList.find(
+    (item) => item.id === updatedExpense.categoryId,
+  );
+
+  const paymentMethod = paymentMethodList.find(
+    (item) => item.id === updatedExpense.paymentMethodId,
+  );
+
+  variableExpenseList.value[targetIndex] = {
+    ...updatedExpense,
+    categoryName: category?.name ?? "",
+    paymentMethodName: paymentMethod?.name ?? "",
+  };
+
+  closeExpenseModal();
 };
 </script>
 
@@ -269,5 +360,14 @@ const toggleExpenseList = (expenseType) => {
     :expenses="variableExpenseList"
     :is-open="openedExpenseType === 'VARIABLE'"
     @toggle="toggleExpenseList('VARIABLE')"
+    @edit="openVariableExpenseEditModal"
+  />
+
+  <!-- 変動費登録・編集モーダル -->
+  <HomeExpenseEntryModal
+    :is-open="isExpenseModalOpen"
+    :expense="editingVariableExpense"
+    @close="closeExpenseModal"
+    @update="updateVariableExpense"
   />
 </template>
