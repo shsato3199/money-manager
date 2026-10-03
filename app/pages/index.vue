@@ -1,18 +1,15 @@
 <script setup>
+import { fetchCurrentDate } from "../api/dateApi";
 import { fetchExpenses } from "../api/expenseApi";
 import { fetchFixedExpenses } from "../api/fixedExpenseApi";
 
 // ========================
 // ① 状態
 // ========================
-
-// 現在日時を取得する。
-const now = new Date();
-
-// 現在の年・月を保持する。
-// getMonth() は 0 始まりなので +1 する。
-const year = ref(now.getFullYear());
-const month = ref(now.getMonth() + 1);
+// 画面に表示する対象年・月を保持する。
+// 初期表示時は現在日付取得APIから取得した年・月を設定する。
+const year = ref(null);
+const month = ref(null);
 
 // 月間集計の仮データ。
 // API実装後は月間集計APIから取得した値に置き換える。
@@ -70,6 +67,19 @@ const totalExpense = computed(() => {
 // ========================
 // ③ API通信
 // ========================
+
+// 現在日付を取得し、画面の初期表示年月を設定する。
+const fetchCurrentDateData = async () => {
+  try {
+    const currentDate = await fetchCurrentDate();
+
+    year.value = currentDate.year;
+    month.value = currentDate.month;
+  } catch (error) {
+    console.error("現在日付の取得に失敗しました。", error);
+  }
+};
+
 // 固定費支出一覧を取得する。
 const fetchFixedExpenseList = async () => {
   try {
@@ -184,8 +194,9 @@ const updateVariableExpense = (updatedExpense) => {
 // ========================
 // ⑤ ライフサイクル
 // ========================
-
-onMounted(() => {
+//初期表示時
+onMounted(async () => {
+  await fetchCurrentDateData();
   // 画面表示時に固定費支出一覧を取得する。
   fetchFixedExpenseList();
   // 画面表示時に変動費支出一覧を取得する。
