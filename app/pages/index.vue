@@ -1,4 +1,6 @@
 <script setup>
+import { fetchExpenses } from "../api/expenseApi";
+
 // ========================
 // ① 状態
 // ========================
@@ -6,11 +8,9 @@
 // 現在日時を取得する。
 const now = new Date();
 
-// 現在の年をリアクティブな値として保持する。
-const year = ref(now.getFullYear());
-
-// 現在の月をリアクティブな値として保持する。
+// 現在の年・月を保持する。
 // getMonth() は 0 始まりなので +1 する。
+const year = ref(now.getFullYear());
 const month = ref(now.getMonth() + 1);
 
 // 月間集計の仮データ。
@@ -83,94 +83,9 @@ const fixedExpenseList = ref([
   },
 ]);
 
-// 変動費支出一覧の仮データ。
-// API実装後は支出一覧APIから取得した値に置き換える。
-const variableExpenseList = ref([
-  {
-    id: 7,
-    transactionDate: "2026-09-05",
-    name: "スーパー",
-    categoryId: 1,
-    categoryName: "食費",
-    paymentMethodId: 2,
-    paymentMethodName: "楽天カード",
-    amount: 5400,
-    shopName: "スーパー",
-    memo: "",
-  },
-  {
-    id: 8,
-    transactionDate: "2026-09-10",
-    name: "電車",
-    categoryId: 3,
-    categoryName: "交通費",
-    paymentMethodId: 1,
-    paymentMethodName: "現金",
-    amount: 1200,
-    shopName: "",
-    memo: "",
-  },
-  {
-    id: 9,
-    transactionDate: "2026-09-12",
-    name: "業務スーパー",
-    categoryId: 1,
-    categoryName: "食費",
-    paymentMethodId: 2,
-    paymentMethodName: "楽天カード",
-    amount: 5400,
-    shopName: "業務スーパー",
-    memo: "",
-  },
-  {
-    id: 10,
-    transactionDate: "2026-09-13",
-    name: "バス",
-    categoryId: 3,
-    categoryName: "交通費",
-    paymentMethodId: 1,
-    paymentMethodName: "現金",
-    amount: 1200,
-    shopName: "",
-    memo: "",
-  },
-  {
-    id: 11,
-    transactionDate: "2026-09-15",
-    name: "映画",
-    categoryId: 4,
-    categoryName: "趣味",
-    paymentMethodId: 2,
-    paymentMethodName: "楽天カード",
-    amount: 2500,
-    shopName: "",
-    memo: "",
-  },
-  {
-    id: 12,
-    transactionDate: "2026-09-20",
-    name: "スーパー",
-    categoryId: 1,
-    categoryName: "食費",
-    paymentMethodId: 2,
-    paymentMethodName: "楽天カード",
-    amount: 5400,
-    shopName: "スーパー",
-    memo: "",
-  },
-  {
-    id: 13,
-    transactionDate: "2026-09-25",
-    name: "バス",
-    categoryId: 3,
-    categoryName: "交通費",
-    paymentMethodId: 1,
-    paymentMethodName: "現金",
-    amount: 1200,
-    shopName: "",
-    memo: "",
-  },
-]);
+// 変動費支出一覧。
+// 支出一覧APIから取得したデータを保持する。
+const variableExpenseList = ref([]);
 
 // 固定費・変動費のどちらを開いているか管理する。
 // null     : 両方閉じる
@@ -182,8 +97,9 @@ const openedExpenseType = ref(null);
 const isExpenseModalOpen = ref(false);
 
 // 編集中の変動費。
-// 新規登録時はnull。
+// 新規登録時は null。
 const editingVariableExpense = ref(null);
+
 // ========================
 // ② computed
 // ========================
@@ -199,7 +115,20 @@ const totalExpense = computed(() => {
 });
 
 // ========================
-// ③ 関数
+// ③ API通信
+// ========================
+
+// Spring Bootから変動費支出一覧を取得する。
+const fetchVariableExpenses = async () => {
+  try {
+    variableExpenseList.value = await fetchExpenses();
+  } catch (error) {
+    console.error("変動費支出一覧の取得に失敗しました。", error);
+  }
+};
+
+// ========================
+// ④ 画面操作
 // ========================
 
 // 月を移動する共通処理。
@@ -208,10 +137,8 @@ const moveMonth = (offset) => {
   // Date が年またぎ・月またぎを自動で補正してくれる。
   const targetDate = new Date(year.value, month.value - 1 + offset, 1);
 
-  // 補正後の年をセットする。
+  // 補正後の年・月をセットする。
   year.value = targetDate.getFullYear();
-
-  // getMonth() は 0 始まりなので +1 する。
   month.value = targetDate.getMonth() + 1;
 };
 
@@ -232,6 +159,7 @@ const toggleExpenseList = (expenseType) => {
   // 別の一覧を押した場合は、そちらを開く。
   openedExpenseType.value = expenseType;
 };
+
 // 変動費編集モーダルを開く。
 const openVariableExpenseEditModal = (expense) => {
   editingVariableExpense.value = {
@@ -257,8 +185,7 @@ const updateVariableExpense = (updatedExpense) => {
     return;
   }
 
-  // 現在は仮データなので、
-  // カテゴリ名・支払元名はIDから取得する。
+  // 現在は仮データなので、カテゴリ名・支払元名はIDから取得する。
   const categoryList = [
     { id: 1, name: "食費" },
     { id: 2, name: "日用品" },
@@ -288,6 +215,15 @@ const updateVariableExpense = (updatedExpense) => {
 
   closeExpenseModal();
 };
+
+// ========================
+// ⑤ ライフサイクル
+// ========================
+
+// 画面表示時に変動費支出一覧を取得する。
+onMounted(() => {
+  fetchVariableExpenses();
+});
 </script>
 
 <template>
