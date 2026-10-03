@@ -1,6 +1,11 @@
 // 変動費一覧取得
-export const fetchExpenses = async () => {
+export const fetchExpenses = async (year, month) => {
   return await $fetch("http://localhost:8080/api/expenses", {
+    // 表示対象の年・月を検索条件として渡す。
+    query: {
+      year,
+      month,
+    },
     // Cookieなどの認証情報も一緒に送る指定。
     credentials: "include",
   });

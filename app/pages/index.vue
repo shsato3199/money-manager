@@ -73,7 +73,7 @@ const totalExpense = computed(() => {
 // 固定費支出一覧を取得する。
 const fetchFixedExpenseList = async () => {
   try {
-    fixedExpenseList.value = await fetchFixedExpenses();
+    fixedExpenseList.value = await fetchFixedExpenses(year.value, month.value);
   } catch (error) {
     console.error("固定費支出一覧の取得に失敗しました。", error);
   }
@@ -82,7 +82,7 @@ const fetchFixedExpenseList = async () => {
 // 変動費支出一覧を取得する。
 const fetchVariableExpenses = async () => {
   try {
-    variableExpenseList.value = await fetchExpenses();
+    variableExpenseList.value = await fetchExpenses(year.value, month.value);
   } catch (error) {
     console.error("変動費支出一覧の取得に失敗しました。", error);
   }
@@ -101,6 +101,10 @@ const moveMonth = (offset) => {
   // 補正後の年・月をセットする。
   year.value = targetDate.getFullYear();
   month.value = targetDate.getMonth() + 1;
+
+  // 移動後の年月を条件に固定費・変動費一覧を再取得する。
+  fetchFixedExpenseList();
+  fetchVariableExpenses();
 };
 
 // 前月へ移動する。
