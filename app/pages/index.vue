@@ -1,5 +1,6 @@
 <script setup>
 import { fetchCurrentDate } from "../api/dateApi";
+import { fetchMonthlySummary } from "../api/summaryApi";
 import { fetchExpenses } from "../api/expenseApi";
 import { fetchFixedExpenses } from "../api/fixedExpenseApi";
 
@@ -11,10 +12,10 @@ import { fetchFixedExpenses } from "../api/fixedExpenseApi";
 const year = ref(null);
 const month = ref(null);
 
-// 月間集計の仮データ。
-// API実装後は月間集計APIから取得した値に置き換える。
-const fixedExpenseTotal = ref(152000);
-const variableExpenseTotal = ref(83400);
+// 月間集計APIから取得した固定費合計・変動費合計・総支出を保持する。
+const fixedExpenseTotal = ref(0);
+const variableExpenseTotal = ref(0);
+const totalExpense = ref(0);
 
 // カテゴリ別集計の仮データ。
 const categorySummaryList = ref([
@@ -59,11 +60,6 @@ const displayYearMonth = computed(() => {
   return `${year.value}年${String(month.value).padStart(2, "0")}月`;
 });
 
-// 固定費と変動費の合計を総支出として計算する。
-const totalExpense = computed(() => {
-  return fixedExpenseTotal.value + variableExpenseTotal.value;
-});
-
 // ========================
 // ③ API通信
 // ========================
@@ -77,6 +73,19 @@ const fetchCurrentDateData = async () => {
     month.value = currentDate.month;
   } catch (error) {
     console.error("現在日付の取得に失敗しました。", error);
+  }
+};
+
+// 指定年月の固定費合計・変動費合計・総支出を取得する。
+const fetchMonthlySummaryData = async () => {
+  try {
+    const monthlySummary = await fetchMonthlySummary(year.value, month.value);
+
+    fixedExpenseTotal.value = monthlySummary.fixedExpenseTotal;
+    variableExpenseTotal.value = monthlySummary.variableExpenseTotal;
+    totalExpense.value = monthlySummary.totalExpense;
+  } catch (error) {
+    console.error("月間支出集計の取得に失敗しました。", error);
   }
 };
 
@@ -111,6 +120,9 @@ const moveMonth = (offset) => {
   // 補正後の年・月をセットする。
   year.value = targetDate.getFullYear();
   month.value = targetDate.getMonth() + 1;
+
+  // 移動後の年月を条件に月間支出集計を再取得する。
+  fetchMonthlySummaryData();
 
   // 移動後の年月を条件に固定費・変動費一覧を再取得する。
   fetchFixedExpenseList();
@@ -196,7 +208,10 @@ const updateVariableExpense = (updatedExpense) => {
 // ========================
 //初期表示時
 onMounted(async () => {
+  // 現在日付を取得して表示対象年月を設定する。
   await fetchCurrentDateData();
+  // 画面表示時に月間支出集計を取得する。
+  fetchMonthlySummaryData();
   // 画面表示時に固定費支出一覧を取得する。
   fetchFixedExpenseList();
   // 画面表示時に変動費支出一覧を取得する。
@@ -249,6 +264,7 @@ onMounted(async () => {
   <HomeMonthlySummaryCard
     :fixed-expense-total="fixedExpenseTotal"
     :variable-expense-total="variableExpenseTotal"
+    :total-expense="totalExpense"
   />
   <!-- カテゴリ別集計サマリー -->
   <HomeCategorySummaryTable

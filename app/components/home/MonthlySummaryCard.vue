@@ -5,13 +5,17 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 // Chart.jsでドーナツグラフを描画するために必要な機能を登録する。
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-// index.vueから固定費合計・変動費合計を受け取る。
+// index.vueから固定費合計・変動費合計・総支出を受け取る。
 const props = defineProps({
   fixedExpenseTotal: {
     type: Number,
     required: true,
   },
   variableExpenseTotal: {
+    type: Number,
+    required: true,
+  },
+  totalExpense: {
     type: Number,
     required: true,
   },
@@ -23,11 +27,6 @@ const expenseColors = {
   fixed: "#5B8DEF",
   variable: "#FFB86B",
 };
-
-// 固定費と変動費の合計を総支出として計算する。
-const totalExpense = computed(() => {
-  return props.fixedExpenseTotal + props.variableExpenseTotal;
-});
 
 // 金額を「¥235,400」の形式で表示する。
 const formatAmount = (amount) => {
