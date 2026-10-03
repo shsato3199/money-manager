@@ -1,5 +1,6 @@
 <script setup>
 import { fetchExpenses } from "../api/expenseApi";
+import { fetchFixedExpenses } from "../api/fixedExpenseApi";
 
 // ========================
 // ① 状態
@@ -31,57 +32,9 @@ const paymentSummaryList = ref([
   { name: "かんぽ", amount: 83400 },
 ]);
 
-// 固定費支出一覧の仮データ。
-const fixedExpenseList = ref([
-  {
-    id: 1,
-    transactionDate: "2026-09-01",
-    name: "家賃",
-    categoryName: "住居費",
-    paymentMethodName: "かんぽ",
-    amount: 80000,
-  },
-  {
-    id: 2,
-    transactionDate: "2026-09-28",
-    name: "Netflix",
-    categoryName: "サブスクリプション",
-    paymentMethodName: "楽天カード",
-    amount: 990,
-  },
-  {
-    id: 3,
-    transactionDate: "2026-09-01",
-    name: "駐車場代",
-    categoryName: "住居費",
-    paymentMethodName: "かんぽ",
-    amount: 80000,
-  },
-  {
-    id: 4,
-    transactionDate: "2026-09-28",
-    name: "Spotify",
-    categoryName: "サブスクリプション",
-    paymentMethodName: "楽天カード",
-    amount: 990,
-  },
-  {
-    id: 5,
-    transactionDate: "2026-09-01",
-    name: "Amazonプライム",
-    categoryName: "住居費",
-    paymentMethodName: "かんぽ",
-    amount: 80000,
-  },
-  {
-    id: 6,
-    transactionDate: "2026-09-28",
-    name: "保険代",
-    categoryName: "サブスクリプション",
-    paymentMethodName: "楽天カード",
-    amount: 990,
-  },
-]);
+// 固定費支出一覧。
+// 固定費一覧APIから取得したデータを保持する。
+const fixedExpenseList = ref([]);
 
 // 変動費支出一覧。
 // 支出一覧APIから取得したデータを保持する。
@@ -117,8 +70,16 @@ const totalExpense = computed(() => {
 // ========================
 // ③ API通信
 // ========================
+// 固定費支出一覧を取得する。
+const fetchFixedExpenseList = async () => {
+  try {
+    fixedExpenseList.value = await fetchFixedExpenses();
+  } catch (error) {
+    console.error("固定費支出一覧の取得に失敗しました。", error);
+  }
+};
 
-// Spring Bootから変動費支出一覧を取得する。
+// 変動費支出一覧を取得する。
 const fetchVariableExpenses = async () => {
   try {
     variableExpenseList.value = await fetchExpenses();
@@ -220,8 +181,10 @@ const updateVariableExpense = (updatedExpense) => {
 // ⑤ ライフサイクル
 // ========================
 
-// 画面表示時に変動費支出一覧を取得する。
 onMounted(() => {
+  // 画面表示時に固定費支出一覧を取得する。
+  fetchFixedExpenseList();
+  // 画面表示時に変動費支出一覧を取得する。
   fetchVariableExpenses();
 });
 </script>
