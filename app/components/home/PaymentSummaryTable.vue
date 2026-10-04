@@ -16,6 +16,13 @@ const isOpen = ref(false);
 const toggleAccordion = () => {
   isOpen.value = !isOpen.value;
 };
+// 親コンポーネントから一覧を閉じられるようにする。
+const closeAccordion = () => {
+  isOpen.value = false;
+};
+defineExpose({
+  closeAccordion,
+});
 
 // 金額表示。
 const formatAmount = (amount) => {
@@ -57,45 +64,56 @@ const getPaymentMethodRate = (amount) => {
 
       <!-- 開いているときだけ表示 -->
       <div v-if="isOpen">
+        <!-- 支出データがない場合 -->
         <div
-          v-for="paymentMethod in paymentMethods"
-          :key="paymentMethod.name"
-          class="row align-items-center g-2 px-3 py-1 border-bottom"
+          v-if="paymentMethods.length === 0"
+          class="text-center text-secondary py-3"
         >
-          <!-- 支払元名 -->
-          <div class="col-4 col-md-3">
-            <span class="small fw-semibold">
-              {{ paymentMethod.name }}
-            </span>
-          </div>
+          支出データはありません
+        </div>
 
-          <!-- 横棒 -->
-          <div class="col-5 col-md-6">
-            <div
-              class="progress"
-              role="progressbar"
-              :aria-label="`${paymentMethod.name}の支出割合`"
-              :aria-valuenow="getPaymentMethodRate(paymentMethod.amount)"
-              aria-valuemin="0"
-              aria-valuemax="100"
-              style="height: 8px"
-            >
+        <!-- 支出データがある場合 -->
+        <template v-else>
+          <div
+            v-for="paymentMethod in paymentMethods"
+            :key="paymentMethod.paymentMethodId"
+            class="row align-items-center g-2 px-3 py-1 border-bottom"
+          >
+            <!-- 支払元名 -->
+            <div class="col-4 col-md-3">
+              <span class="small fw-semibold">
+                {{ paymentMethod.name }}
+              </span>
+            </div>
+
+            <!-- 横棒 -->
+            <div class="col-5 col-md-6">
               <div
-                class="progress-bar bg-secondary"
-                :style="{
-                  width: `${getPaymentMethodRate(paymentMethod.amount)}%`,
-                }"
-              ></div>
+                class="progress"
+                role="progressbar"
+                :aria-label="`${paymentMethod.name}の支出割合`"
+                :aria-valuenow="getPaymentMethodRate(paymentMethod.amount)"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                style="height: 8px"
+              >
+                <div
+                  class="progress-bar bg-secondary"
+                  :style="{
+                    width: `${getPaymentMethodRate(paymentMethod.amount)}%`,
+                  }"
+                ></div>
+              </div>
+            </div>
+
+            <!-- 金額 -->
+            <div class="col-3 text-end">
+              <span class="small fw-bold">
+                {{ formatAmount(paymentMethod.amount) }}
+              </span>
             </div>
           </div>
-
-          <!-- 金額 -->
-          <div class="col-3 text-end">
-            <span class="small fw-bold">
-              {{ formatAmount(paymentMethod.amount) }}
-            </span>
-          </div>
-        </div>
+        </template>
       </div>
     </div>
   </section>

@@ -16,6 +16,13 @@ const isOpen = ref(false);
 const toggleAccordion = () => {
   isOpen.value = !isOpen.value;
 };
+// 親コンポーネントから一覧を閉じられるようにする。
+const closeAccordion = () => {
+  isOpen.value = false;
+};
+defineExpose({
+  closeAccordion,
+});
 
 // 金額表示。
 const formatAmount = (amount) => {
@@ -56,41 +63,56 @@ const getCategoryRate = (amount) => {
 
       <!-- 開いているときだけ表示 -->
       <div v-if="isOpen">
+        <!-- 支出データがない場合 -->
         <div
-          v-for="category in categories"
-          :key="category.name"
-          class="row align-items-center g-2 px-3 py-1 border-bottom"
+          v-if="categories.length === 0"
+          class="text-center text-secondary py-3"
         >
-          <div class="col-4 col-md-3">
-            <span class="small fw-semibold">
-              {{ category.name }}
-            </span>
-          </div>
+          支出データはありません
+        </div>
 
-          <div class="col-5 col-md-6">
-            <div
-              class="progress"
-              role="progressbar"
-              :aria-valuenow="getCategoryRate(category.amount)"
-              aria-valuemin="0"
-              aria-valuemax="100"
-              style="height: 8px"
-            >
+        <!-- 支出データがある場合 -->
+        <template v-else>
+          <div
+            v-for="category in categories"
+            :key="category.categoryId"
+            class="row align-items-center g-2 px-3 py-1 border-bottom"
+          >
+            <!-- カテゴリ名 -->
+            <div class="col-4 col-md-3">
+              <span class="small fw-semibold">
+                {{ category.name }}
+              </span>
+            </div>
+
+            <!-- 横棒 -->
+            <div class="col-5 col-md-6">
               <div
-                class="progress-bar bg-dark"
-                :style="{
-                  width: `${getCategoryRate(category.amount)}%`,
-                }"
-              ></div>
+                class="progress"
+                role="progressbar"
+                :aria-label="`${category.name}の支出割合`"
+                :aria-valuenow="getCategoryRate(category.amount)"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                style="height: 8px"
+              >
+                <div
+                  class="progress-bar bg-dark"
+                  :style="{
+                    width: `${getCategoryRate(category.amount)}%`,
+                  }"
+                ></div>
+              </div>
+            </div>
+
+            <!-- 金額 -->
+            <div class="col-3 text-end">
+              <span class="small fw-bold">
+                {{ formatAmount(category.amount) }}
+              </span>
             </div>
           </div>
-
-          <div class="col-3 text-end">
-            <span class="small fw-bold">
-              {{ formatAmount(category.amount) }}
-            </span>
-          </div>
-        </div>
+        </template>
       </div>
     </div>
   </section>

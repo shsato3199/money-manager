@@ -31,11 +31,13 @@ const fixedExpenseList = ref([]);
 // 支出一覧APIから取得したデータを保持する。
 const variableExpenseList = ref([]);
 
-// 固定費・変動費のどちらを開いているか管理する。
-// null     : 両方閉じる
-// FIXED    : 固定費を開く
-// VARIABLE : 変動費を開く
-const openedExpenseType = ref(null);
+// 固定費一覧の開閉状態。
+const isFixedExpenseOpen = ref(false);
+// 変動費一覧の開閉状態。
+const isVariableExpenseOpen = ref(false);
+// カテゴリ別集計・支払元別集計コンポーネントを参照する。
+const categorySummaryTableRef = ref(null);
+const paymentSummaryTableRef = ref(null);
 
 // 支出登録・編集モーダルの開閉状態。
 const isExpenseModalOpen = ref(false);
@@ -138,6 +140,13 @@ const moveMonth = (offset) => {
   year.value = targetDate.getFullYear();
   month.value = targetDate.getMonth() + 1;
 
+  // 月を移動したときはすべての一覧・集計を閉じる。
+  isFixedExpenseOpen.value = false;
+  isVariableExpenseOpen.value = false;
+  // ?. は、コンポーネントが存在していれば closeAccordion() を実行する
+  categorySummaryTableRef.value?.closeAccordion();
+  paymentSummaryTableRef.value?.closeAccordion();
+
   // 移動後の年月を条件に月間支出集計を再取得する。
   fetchMonthlySummaryData();
 
@@ -156,16 +165,14 @@ const movePreviousMonth = () => moveMonth(-1);
 // 翌月へ移動する。
 const moveNextMonth = () => moveMonth(1);
 
-// 支出一覧の開閉を切り替える。
-const toggleExpenseList = (expenseType) => {
-  // すでに開いている一覧を押した場合は閉じる。
-  if (openedExpenseType.value === expenseType) {
-    openedExpenseType.value = null;
-    return;
-  }
+// 固定費一覧の開閉を切り替える。
+const toggleFixedExpenseList = () => {
+  isFixedExpenseOpen.value = !isFixedExpenseOpen.value;
+};
 
-  // 別の一覧を押した場合は、そちらを開く。
-  openedExpenseType.value = expenseType;
+// 変動費一覧の開閉を切り替える。
+const toggleVariableExpenseList = () => {
+  isVariableExpenseOpen.value = !isVariableExpenseOpen.value;
 };
 
 // 変動費編集モーダルを開く。
@@ -295,11 +302,13 @@ onMounted(async () => {
   />
   <!-- カテゴリ別集計サマリー -->
   <HomeCategorySummaryTable
+    ref="categorySummaryTableRef"
     :categories="categorySummaryList"
     :total-expense="totalExpense"
   />
   <!-- 支払元別集計サマリー -->
   <HomePaymentSummaryTable
+    ref="paymentSummaryTableRef"
     :payment-methods="paymentSummaryList"
     :total-expense="totalExpense"
   />
@@ -307,19 +316,17 @@ onMounted(async () => {
   <HomeExpenseTable
     title="固定費一覧"
     :expenses="fixedExpenseList"
-    :is-open="openedExpenseType === 'FIXED'"
-    @toggle="toggleExpenseList('FIXED')"
+    :is-open="isFixedExpenseOpen"
+    @toggle="toggleFixedExpenseList"
   />
-
   <!-- 変動費一覧 -->
   <HomeExpenseTable
     title="変動費一覧"
     :expenses="variableExpenseList"
-    :is-open="openedExpenseType === 'VARIABLE'"
-    @toggle="toggleExpenseList('VARIABLE')"
+    :is-open="isVariableExpenseOpen"
+    @toggle="toggleVariableExpenseList"
     @edit="openVariableExpenseEditModal"
   />
-
   <!-- 変動費登録・編集モーダル -->
   <HomeExpenseEntryModal
     :is-open="isExpenseModalOpen"
