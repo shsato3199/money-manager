@@ -1,8 +1,11 @@
 import { getCsrfToken } from "~/utils/csrf";
+import { getApiBaseUrl } from "./apiConfig";
 
 // 変動費一覧取得
 export const fetchExpenses = async (year, month) => {
-  return await $fetch("http://localhost:8080/api/expenses", {
+  const apiBaseUrl = getApiBaseUrl();
+
+  return await $fetch(`${apiBaseUrl}/api/expenses`, {
     // 表示対象の年・月を検索条件として渡す。
     query: {
       year,
@@ -15,9 +18,10 @@ export const fetchExpenses = async (year, month) => {
 
 // 変動費登録
 export const createExpense = async (expense) => {
+  const apiBaseUrl = getApiBaseUrl();
   const csrfToken = getCsrfToken();
 
-  return await $fetch("http://localhost:8080/api/expenses", {
+  return await $fetch(`${apiBaseUrl}/api/expenses`, {
     method: "POST",
     body: expense,
     // Cookieなどの認証情報も一緒に送る指定。

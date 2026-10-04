@@ -1,6 +1,10 @@
+import { getApiBaseUrl } from "./apiConfig";
+
 // 固定費一覧取得
 export const fetchFixedExpenses = async (year, month) => {
-  return await $fetch("http://localhost:8080/api/fixed-expenses", {
+  const apiBaseUrl = getApiBaseUrl();
+
+  return await $fetch(`${apiBaseUrl}/api/fixed-expenses`, {
     // 表示対象の年・月を検索条件として渡す。
     query: {
       year,
