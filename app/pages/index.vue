@@ -1,6 +1,10 @@
 <script setup>
 import { fetchCurrentDate } from "../api/dateApi";
-import { fetchMonthlySummary } from "../api/summaryApi";
+import {
+  fetchMonthlySummary,
+  fetchCategorySummary,
+  fetchPaymentSummary,
+} from "../api/summaryApi";
 import { fetchExpenses } from "../api/expenseApi";
 import { fetchFixedExpenses } from "../api/fixedExpenseApi";
 
@@ -17,24 +21,13 @@ const fixedExpenseTotal = ref(0);
 const variableExpenseTotal = ref(0);
 const totalExpense = ref(0);
 
-// カテゴリ別集計の仮データ。
-const categorySummaryList = ref([
-  { name: "食費", amount: 83400 },
-  { name: "交通費", amount: 12000 },
-  { name: "趣味", amount: 25000 },
-]);
+// カテゴリ別集計APIから取得したデータを保持する。
+const categorySummaryList = ref([]);
+// 支払元別集計APIから取得したデータを保持する。
+const paymentSummaryList = ref([]);
 
-// 支払元別集計の仮データ。
-const paymentSummaryList = ref([
-  { name: "楽天カード", amount: 102000 },
-  { name: "かんぽ", amount: 83400 },
-]);
-
-// 固定費支出一覧。
 // 固定費一覧APIから取得したデータを保持する。
 const fixedExpenseList = ref([]);
-
-// 変動費支出一覧。
 // 支出一覧APIから取得したデータを保持する。
 const variableExpenseList = ref([]);
 
@@ -89,6 +82,30 @@ const fetchMonthlySummaryData = async () => {
   }
 };
 
+// 指定年月のカテゴリ別支出集計を取得する。
+const fetchCategorySummaryData = async () => {
+  try {
+    categorySummaryList.value = await fetchCategorySummary(
+      year.value,
+      month.value,
+    );
+  } catch (error) {
+    console.error("カテゴリ別支出集計の取得に失敗しました。", error);
+  }
+};
+
+// 指定年月の支払元別支出集計を取得する。
+const fetchPaymentSummaryData = async () => {
+  try {
+    paymentSummaryList.value = await fetchPaymentSummary(
+      year.value,
+      month.value,
+    );
+  } catch (error) {
+    console.error("支払元別支出集計の取得に失敗しました。", error);
+  }
+};
+
 // 固定費支出一覧を取得する。
 const fetchFixedExpenseList = async () => {
   try {
@@ -123,6 +140,10 @@ const moveMonth = (offset) => {
 
   // 移動後の年月を条件に月間支出集計を再取得する。
   fetchMonthlySummaryData();
+
+  // 移動後の年月を条件にカテゴリ別・支払元別集計を再取得する。
+  fetchCategorySummaryData();
+  fetchPaymentSummaryData();
 
   // 移動後の年月を条件に固定費・変動費一覧を再取得する。
   fetchFixedExpenseList();
@@ -206,12 +227,18 @@ const updateVariableExpense = (updatedExpense) => {
 // ========================
 // ⑤ ライフサイクル
 // ========================
-//初期表示時
+// 初期表示時
 onMounted(async () => {
   // 現在日付を取得して表示対象年月を設定する。
   await fetchCurrentDateData();
+
   // 画面表示時に月間支出集計を取得する。
   fetchMonthlySummaryData();
+
+  // 画面表示時にカテゴリ別・支払元別集計を取得する。
+  fetchCategorySummaryData();
+  fetchPaymentSummaryData();
+
   // 画面表示時に固定費支出一覧を取得する。
   fetchFixedExpenseList();
   // 画面表示時に変動費支出一覧を取得する。
