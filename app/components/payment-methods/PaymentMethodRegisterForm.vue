@@ -1,4 +1,8 @@
 <script setup>
+// ========================
+// ① props / emits
+// ========================
+
 const props = defineProps({
   paymentMethodName: {
     type: String,

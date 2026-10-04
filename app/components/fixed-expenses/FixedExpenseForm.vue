@@ -1,4 +1,7 @@
 <script setup>
+// ========================
+// ① import
+// ========================
 import {
   REQUIRED_MESSAGE,
   POSITIVE_INTEGER_MESSAGE,
@@ -9,6 +12,10 @@ import {
   isValidYearMonthRange,
   isWithinMaxLength,
 } from "~/utils/validation";
+
+// ========================
+// ② 状態
+// ========================
 
 // 固定費フォームの入力値。
 const fixedExpenseName = ref("");
@@ -48,6 +55,10 @@ const paymentMethodList = ref([
   { id: 3, name: "かんぽ" },
 ]);
 
+// ========================
+// ③ watch
+// ========================
+
 // 入力値が変更されたら、対象項目のエラーを消す。
 watch(fixedExpenseName, () => {
   errors.value.fixedExpenseName = "";
@@ -80,6 +91,10 @@ watch(endYearMonth, () => {
 watch(memo, () => {
   errors.value.memo = "";
 });
+
+// ========================
+// ④ 関数
+// ========================
 
 // 入力内容をチェックする。
 const validate = () => {

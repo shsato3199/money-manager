@@ -1,4 +1,8 @@
 <script setup>
+// ========================
+// ① props
+// ========================
+
 const props = defineProps({
   paymentMethods: {
     type: Array,
@@ -10,16 +14,28 @@ const props = defineProps({
   },
 });
 
+// ========================
+// ② 状態
+// ========================
+
 // 初期表示は閉じる。
 const isOpen = ref(false);
+
+// ========================
+// ③ 関数
+// ========================
+
 // 開閉切り替え。
 const toggleAccordion = () => {
   isOpen.value = !isOpen.value;
 };
+
 // 親コンポーネントから一覧を閉じられるようにする。
 const closeAccordion = () => {
   isOpen.value = false;
 };
+
+// 親コンポーネントから呼べるようにする。
 defineExpose({
   closeAccordion,
 });
@@ -29,12 +45,14 @@ const formatAmount = (amount) => {
   // 金額を「¥xxx,xxx」の形式で表示する。
   return `¥${amount.toLocaleString()}`;
 };
+
 // 総支出を100%として割合を計算。
 const getPaymentMethodRate = (amount) => {
   if (props.totalExpense === 0) {
     // 総支出が0円のときは、割合を0%として表示する。
     return 0;
   }
+
   // 総支出を100%として割合を計算する。
   return Math.min((amount / props.totalExpense) * 100, 100);
 };

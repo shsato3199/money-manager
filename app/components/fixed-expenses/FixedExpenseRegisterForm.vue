@@ -1,4 +1,7 @@
 <script setup>
+// ========================
+// ① import
+// ========================
 import {
   REQUIRED_MESSAGE,
   POSITIVE_INTEGER_MESSAGE,
@@ -10,6 +13,9 @@ import {
   isWithinMaxLength,
 } from "~/utils/validation";
 
+// ========================
+// ② props / emits
+// ========================
 const props = defineProps({
   categoryList: {
     type: Array,
@@ -25,7 +31,7 @@ const props = defineProps({
 const emit = defineEmits(["register"]);
 
 // ========================
-// ① 状態
+// ③ 状態
 // ========================
 
 const fixedExpenseName = ref("");
@@ -50,7 +56,7 @@ const errors = ref({
 });
 
 // ========================
-// ② watch
+// ④ watch
 // ========================
 
 watch(fixedExpenseName, () => {
@@ -86,7 +92,7 @@ watch(memo, () => {
 });
 
 // ========================
-// ③ 関数
+// ⑤ 関数
 // ========================
 
 const validate = () => {

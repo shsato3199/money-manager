@@ -1,4 +1,7 @@
 <script setup>
+// ========================
+// ① import
+// ========================
 import {
   REQUIRED_MESSAGE,
   POSITIVE_INTEGER_MESSAGE,
@@ -9,6 +12,10 @@ import {
   isValidYearMonthRange,
   isWithinMaxLength,
 } from "~/utils/validation";
+
+// ========================
+// ② props / emits
+// ========================
 
 const props = defineProps({
   isOpen: {
@@ -40,7 +47,7 @@ const props = defineProps({
 const emit = defineEmits(["close", "update", "delete"]);
 
 // ========================
-// ① 状態
+// ③ 状態
 // ========================
 
 const fixedExpenseName = ref("");
@@ -74,7 +81,7 @@ const errors = ref({
 });
 
 // ========================
-// ② watch
+// ④ watch
 // ========================
 
 // 編集対象をフォームへ設定する。
@@ -153,7 +160,7 @@ watch(displayOrder, () => {
 });
 
 // ========================
-// ③ 関数
+// ⑤ 関数
 // ========================
 
 // 表示順チェック。

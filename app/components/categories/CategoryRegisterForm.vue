@@ -1,8 +1,11 @@
 <script setup>
+// ========================
+// ① import
+// ========================
 import { REQUIRED_MESSAGE, isRequired } from "~/utils/validation";
 
 // ========================
-// ① 状態
+// ② 状態
 // ========================
 
 const categoryName = ref("");
@@ -12,7 +15,7 @@ const errors = ref({
 });
 
 // ========================
-// ② watch
+// ③ watch
 // ========================
 
 // 入力されたらエラーを解除
@@ -21,13 +24,12 @@ watch(categoryName, () => {
 });
 
 // ========================
-// ③ emit
+// ④ emits
 // ========================
-
 const emit = defineEmits(["register"]);
 
 // ========================
-// ④ 関数
+// ⑤ 関数
 // ========================
 
 const validate = () => {

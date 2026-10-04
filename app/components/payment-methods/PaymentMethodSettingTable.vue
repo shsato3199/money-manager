@@ -1,4 +1,8 @@
 <script setup>
+// ========================
+// ① props / emits
+// ========================
+
 const props = defineProps({
   paymentMethodList: {
     type: Array,
@@ -12,20 +16,30 @@ const props = defineProps({
 
 const emit = defineEmits(["edit"]);
 
+// ========================
+// ② 状態
+// ========================
+
 // 初期表示は閉じる。
 const isOpen = ref(false);
+
+// ========================
+// ③ 関数
+// ========================
 
 // 開閉切り替え。
 const toggleAccordion = () => {
   isOpen.value = !isOpen.value;
 };
 
+// 支払元種別の値から表示名を取得する。
 const getPaymentTypeLabel = (value) => {
   return (
     props.paymentTypeList.find((type) => type.value === value)?.label ?? ""
   );
 };
 
+// 編集要求を親コンポーネントへ通知する。
 const requestEdit = (paymentMethod) => {
   emit("edit", paymentMethod);
 };

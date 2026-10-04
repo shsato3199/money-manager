@@ -1,5 +1,13 @@
 <script setup>
+// ========================
+// ① import
+// ========================
+
 import { REQUIRED_MESSAGE, isRequired } from "~/utils/validation";
+
+// ========================
+// ② props / emits
+// ========================
 
 const props = defineProps({
   isOpen: {
@@ -21,7 +29,7 @@ const props = defineProps({
 const emit = defineEmits(["close", "update", "delete"]);
 
 // ========================
-// ① 状態
+// ③ 状態
 // ========================
 
 const categoryName = ref("");
@@ -35,7 +43,7 @@ const errors = ref({
 });
 
 // ========================
-// ② watch
+// ④ watch
 // ========================
 
 watch(
@@ -67,7 +75,7 @@ watch(displayOrder, () => {
 });
 
 // ========================
-// ③ 関数
+// ⑤ 関数
 // ========================
 
 const isValidDisplayOrder = (value) => {
@@ -106,7 +114,6 @@ const validate = () => {
 };
 
 // 編集モーダルを閉じる
-
 const closeModal = () => {
   confirmationType.value = null;
   deleteErrorMessage.value = "";

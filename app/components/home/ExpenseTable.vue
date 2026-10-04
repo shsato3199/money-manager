@@ -1,4 +1,8 @@
 <script setup>
+// ========================
+// ① props / emits
+// ========================
+
 // index.vueから一覧タイトル、支出データ、開閉状態を受け取る。
 const props = defineProps({
   title: {
@@ -17,6 +21,10 @@ const props = defineProps({
 
 // 親コンポーネント(index.vue)へ通知する。
 const emit = defineEmits(["toggle", "edit"]);
+
+// ========================
+// ② 関数
+// ========================
 
 // 金額を「¥xx,xxx」の形式で表示する。
 const formatAmount = (amount) => {

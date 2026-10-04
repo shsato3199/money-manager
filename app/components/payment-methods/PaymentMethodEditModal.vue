@@ -1,5 +1,13 @@
 <script setup>
+// ========================
+// ① import
+// ========================
+
 import { REQUIRED_MESSAGE, isRequired } from "~/utils/validation";
+
+// ========================
+// ② props / emits
+// ========================
 
 const props = defineProps({
   isOpen: {
@@ -28,7 +36,7 @@ const props = defineProps({
 const emit = defineEmits(["close", "update", "delete"]);
 
 // ========================
-// ① 状態
+// ③ 状態
 // ========================
 
 const paymentMethodName = ref("");
@@ -47,7 +55,7 @@ const errors = ref({
 });
 
 // ========================
-// ② watch
+// ④ watch
 // ========================
 
 // 編集対象が変わったら入力値へ反映
@@ -87,7 +95,7 @@ watch(displayOrder, () => {
 });
 
 // ========================
-// ③ 関数
+// ⑤ 関数
 // ========================
 
 // 編集時の表示順チェック。

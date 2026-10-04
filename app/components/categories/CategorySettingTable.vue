@@ -1,4 +1,8 @@
 <script setup>
+// ========================
+// ① props / emits
+// ========================
+
 defineProps({
   categoryList: {
     type: Array,
@@ -9,16 +13,17 @@ defineProps({
 const emit = defineEmits(["edit"]);
 
 // ========================
-// ① 状態
+// ② 状態
 // ========================
 
 // 初期表示は閉じる
 const isOpen = ref(false);
 
 // ========================
-// ② 関数
+// ③ 関数
 // ========================
 
+// 開閉切り替え。
 const toggleAccordion = () => {
   isOpen.value = !isOpen.value;
 };

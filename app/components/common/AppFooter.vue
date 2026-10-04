@@ -1,5 +1,13 @@
 <script setup>
+// ========================
+// ① import
+// ========================
+
 import { createExpense } from "../../api/expenseApi";
+
+// ========================
+// ② 状態
+// ========================
 
 // 変動費登録後にホーム画面へ再取得を通知するための状態。
 const expenseRefreshKey = useState("expenseRefreshKey", () => 0);
@@ -12,6 +20,10 @@ const isExpenseEntryModalOpen = ref(false);
 
 // 支出登録モーダルのコンポーネント参照。
 const expenseEntryModalRef = ref(null);
+
+// ========================
+// ③ 関数
+// ========================
 
 // 支出登録モーダルを開く。
 const openExpenseEntryModal = () => {

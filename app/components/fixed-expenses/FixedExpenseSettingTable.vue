@@ -1,4 +1,8 @@
 <script setup>
+// ========================
+// ① props / emits
+// ========================
+
 const props = defineProps({
   fixedExpenseList: {
     type: Array,
@@ -8,8 +12,16 @@ const props = defineProps({
 
 const emit = defineEmits(["edit"]);
 
+// ========================
+// ② 状態
+// ========================
+
 // 初期表示は閉じる。
 const isOpen = ref(false);
+
+// ========================
+// ③ 関数
+// ========================
 
 // 開閉切り替え。
 const toggleAccordion = () => {

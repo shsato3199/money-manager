@@ -128,6 +128,16 @@ const fetchVariableExpenses = async () => {
   }
 };
 
+// ホーム画面に表示する一覧・集計をまとめて取得する。
+const fetchHomeData = async () => {
+  await Promise.all([
+    fetchMonthlySummaryData(),
+    fetchCategorySummaryData(),
+    fetchPaymentSummaryData(),
+    fetchFixedExpenseList(),
+    fetchVariableExpenses(),
+  ]);
+};
 // ========================
 // ④ 画面操作
 // ========================
@@ -145,20 +155,13 @@ const moveMonth = (offset) => {
   // 月を移動したときはすべての一覧・集計を閉じる。
   isFixedExpenseOpen.value = false;
   isVariableExpenseOpen.value = false;
-  // ?. は、コンポーネントが存在していれば closeAccordion() を実行する
+
+  // ?. は、コンポーネントが存在していれば closeAccordion() を実行する。
   categorySummaryTableRef.value?.closeAccordion();
   paymentSummaryTableRef.value?.closeAccordion();
 
-  // 移動後の年月を条件に月間支出集計を再取得する。
-  fetchMonthlySummaryData();
-
-  // 移動後の年月を条件にカテゴリ別・支払元別集計を再取得する。
-  fetchCategorySummaryData();
-  fetchPaymentSummaryData();
-
-  // 移動後の年月を条件に固定費・変動費一覧を再取得する。
-  fetchFixedExpenseList();
-  fetchVariableExpenses();
+  // 移動後の年月を条件に一覧・集計を再取得する。
+  fetchHomeData();
 };
 
 // 前月へ移動する。
@@ -238,28 +241,15 @@ const updateVariableExpense = (updatedExpense) => {
 // ========================
 // 変動費登録成功後、現在表示中の年月の一覧・集計を再取得する。
 watch(expenseRefreshKey, () => {
-  fetchMonthlySummaryData();
-  fetchCategorySummaryData();
-  fetchPaymentSummaryData();
-  fetchFixedExpenseList();
-  fetchVariableExpenses();
+  fetchHomeData();
 });
 // 初期表示時
 onMounted(async () => {
-  // 現在日付を取得して表示対象年月を設定する。
+  // 現在日付を取得して表示年月を設定する。
   await fetchCurrentDateData();
 
-  // 画面表示時に月間支出集計を取得する。
-  fetchMonthlySummaryData();
-
-  // 画面表示時にカテゴリ別・支払元別集計を取得する。
-  fetchCategorySummaryData();
-  fetchPaymentSummaryData();
-
-  // 画面表示時に固定費支出一覧を取得する。
-  fetchFixedExpenseList();
-  // 画面表示時に変動費支出一覧を取得する。
-  fetchVariableExpenses();
+  // 設定した年月を条件に一覧・集計を取得する。
+  await fetchHomeData();
 });
 </script>
 

@@ -1,9 +1,21 @@
 <script setup>
+// ========================
+// ① import
+// ========================
+
 import { Doughnut } from "vue-chartjs";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 
+// ========================
+// ② Chart.js設定
+// ========================
+
 // Chart.jsでドーナツグラフを描画するために必要な機能を登録する。
 ChartJS.register(ArcElement, Tooltip, Legend);
+
+// ========================
+// ③ props
+// ========================
 
 // index.vueから固定費合計・変動費合計・総支出を受け取る。
 const props = defineProps({
@@ -21,6 +33,10 @@ const props = defineProps({
   },
 });
 
+// ========================
+// ④ 定数
+// ========================
+
 // 支出種別ごとの表示色。
 // 色を変更するときは、ここだけ変更する。
 const expenseColors = {
@@ -28,10 +44,18 @@ const expenseColors = {
   variable: "#FFB86B",
 };
 
+// ========================
+// ⑤ 関数
+// ========================
+
 // 金額を「¥235,400」の形式で表示する。
 const formatAmount = (amount) => {
   return `¥${amount.toLocaleString()}`;
 };
+
+// ========================
+// ⑥ computed
+// ========================
 
 // ドーナツグラフに表示するデータ。
 const chartData = computed(() => ({
@@ -44,6 +68,10 @@ const chartData = computed(() => ({
     },
   ],
 }));
+
+// ========================
+// ⑦ グラフ設定
+// ========================
 
 // ドーナツグラフの表示設定。
 const chartOptions = {
