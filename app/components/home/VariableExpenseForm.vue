@@ -1,4 +1,5 @@
 <script setup>
+import { normalizeNumber } from "~/utils/normalize";
 import {
   REQUIRED_MESSAGE,
   POSITIVE_INTEGER_MESSAGE,
@@ -124,6 +125,11 @@ function setFormValues(expense) {
     memo: "",
   };
 }
+
+// 金額入力の全角数字を半角数字へ変換する。
+const normalizeAmount = () => {
+  amount.value = normalizeNumber(amount.value);
+};
 
 // 入力内容をチェックする。
 const validate = () => {
@@ -270,13 +276,13 @@ defineExpose({
 
         <input
           id="variable-amount"
-          v-model.number="amount"
-          type="number"
-          min="1"
-          step="1"
+          v-model="amount"
+          type="text"
+          inputmode="numeric"
           class="form-control"
           :class="{ 'is-invalid': errors.amount }"
           placeholder="1200"
+          @input="normalizeAmount"
         />
       </div>
 

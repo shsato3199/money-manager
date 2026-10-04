@@ -1,6 +1,9 @@
 <script setup>
 import { createExpense } from "../../api/expenseApi";
 
+// 変動費登録後にホーム画面へ再取得を通知するための状態。
+const expenseRefreshKey = useState("expenseRefreshKey", () => 0);
+
 // 現在の画面URLを取得する。
 const route = useRoute();
 
@@ -25,6 +28,9 @@ const registerVariableExpense = async (expense) => {
   try {
     // 変動費登録APIを呼び出す。
     await createExpense(expense);
+
+    // ホーム画面へ一覧・集計の再取得を通知する。
+    expenseRefreshKey.value++;
 
     // モーダルは閉じず、
     // フォームを初期化して登録完了メッセージを表示する。

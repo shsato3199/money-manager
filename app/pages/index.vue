@@ -11,6 +11,8 @@ import { fetchFixedExpenses } from "../api/fixedExpenseApi";
 // ========================
 // ① 状態
 // ========================
+// AppFooterで変動費が登録されたことを検知するための共有状態。
+const expenseRefreshKey = useState("expenseRefreshKey", () => 0);
 // 画面に表示する対象年・月を保持する。
 // 初期表示時は現在日付取得APIから取得した年・月を設定する。
 const year = ref(null);
@@ -234,6 +236,14 @@ const updateVariableExpense = (updatedExpense) => {
 // ========================
 // ⑤ ライフサイクル
 // ========================
+// 変動費登録成功後、現在表示中の年月の一覧・集計を再取得する。
+watch(expenseRefreshKey, () => {
+  fetchMonthlySummaryData();
+  fetchCategorySummaryData();
+  fetchPaymentSummaryData();
+  fetchFixedExpenseList();
+  fetchVariableExpenses();
+});
 // 初期表示時
 onMounted(async () => {
   // 現在日付を取得して表示対象年月を設定する。
