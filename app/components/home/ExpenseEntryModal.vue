@@ -26,6 +26,9 @@ const emit = defineEmits(["close", "register", "update"]);
 // 変動費フォームのコンポーネント参照。
 const variableExpenseFormRef = ref(null);
 
+// 新規登録完了メッセージの表示状態。
+const isRegisterSuccess = ref(false);
+
 // ========================
 // ③ computed
 // ========================
@@ -41,6 +44,9 @@ const isEditMode = computed(() => {
 
 // モーダルを閉じる。
 const closeModal = () => {
+  // 次回モーダルを開いたときに登録完了メッセージが残らないようにする。
+  isRegisterSuccess.value = false;
+
   emit("close");
 };
 
@@ -68,10 +74,29 @@ const handleRegister = () => {
   }
 
   // 新規登録の場合。
+  // API登録成功後に親コンポーネントから
+  // フォーム初期化・登録完了表示を行うため、ここではモーダルを閉じない。
   emit("register", formData);
-
-  closeModal();
 };
+
+// 新規登録成功後の画面処理。
+const handleRegisterSuccess = () => {
+  // 入力フォームを初期化する。
+  variableExpenseFormRef.value?.clearForm();
+
+  // 登録完了メッセージを表示する。
+  isRegisterSuccess.value = true;
+};
+
+// 登録完了メッセージを閉じる。
+const closeRegisterSuccess = () => {
+  isRegisterSuccess.value = false;
+};
+
+// 親コンポーネントから登録成功後の画面処理を呼べるようにする。
+defineExpose({
+  handleRegisterSuccess,
+});
 </script>
 
 <template>
@@ -103,6 +128,21 @@ const handleRegister = () => {
 
             <!-- 本文 -->
             <div class="modal-body">
+              <!-- 登録完了メッセージ -->
+              <div
+                v-if="isRegisterSuccess"
+                class="alert alert-success alert-dismissible fade show"
+                role="alert"
+              >
+                登録しました
+                <button
+                  type="button"
+                  class="btn-close"
+                  aria-label="閉じる"
+                  @click="closeRegisterSuccess"
+                ></button>
+              </div>
+
               <HomeVariableExpenseForm
                 ref="variableExpenseFormRef"
                 :expense="expense"

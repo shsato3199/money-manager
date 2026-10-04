@@ -1,9 +1,14 @@
 <script setup>
+import { createExpense } from "../../api/expenseApi";
+
 // 現在の画面URLを取得する。
 const route = useRoute();
 
 // 支出登録モーダルの開閉状態。
 const isExpenseEntryModalOpen = ref(false);
+
+// 支出登録モーダルのコンポーネント参照。
+const expenseEntryModalRef = ref(null);
 
 // 支出登録モーダルを開く。
 const openExpenseEntryModal = () => {
@@ -13,6 +18,20 @@ const openExpenseEntryModal = () => {
 // 支出登録モーダルを閉じる。
 const closeExpenseEntryModal = () => {
   isExpenseEntryModalOpen.value = false;
+};
+
+// 変動費を登録する。
+const registerVariableExpense = async (expense) => {
+  try {
+    // 変動費登録APIを呼び出す。
+    await createExpense(expense);
+
+    // モーダルは閉じず、
+    // フォームを初期化して登録完了メッセージを表示する。
+    expenseEntryModalRef.value?.handleRegisterSuccess();
+  } catch (error) {
+    console.error("変動費の登録に失敗しました。", error);
+  }
 };
 </script>
 <template>
@@ -80,7 +99,9 @@ const closeExpenseEntryModal = () => {
   </footer>
 
   <HomeExpenseEntryModal
+    ref="expenseEntryModalRef"
     :is-open="isExpenseEntryModalOpen"
     @close="closeExpenseEntryModal"
+    @register="registerVariableExpense"
   />
 </template>

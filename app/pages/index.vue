@@ -327,7 +327,7 @@ onMounted(async () => {
     @toggle="toggleVariableExpenseList"
     @edit="openVariableExpenseEditModal"
   />
-  <!-- 変動費登録・編集モーダル -->
+  <!-- 変動費編集モーダル -->
   <HomeExpenseEntryModal
     :is-open="isExpenseModalOpen"
     :expense="editingVariableExpense"

@@ -1,3 +1,5 @@
+import { getCsrfToken } from "~/utils/csrf";
+
 // 変動費一覧取得
 export const fetchExpenses = async (year, month) => {
   return await $fetch("http://localhost:8080/api/expenses", {
@@ -13,7 +15,22 @@ export const fetchExpenses = async (year, month) => {
 
 // 変動費登録
 export const createExpense = async (expense) => {
-  // POST
+  const csrfToken = getCsrfToken();
+
+  return await $fetch("http://localhost:8080/api/expenses", {
+    method: "POST",
+    body: expense,
+    // Cookieなどの認証情報も一緒に送る指定。
+    credentials: "include",
+    // Spring SecurityへCSRFトークンを送る。
+    headers: csrfToken
+      ? {
+          "X-XSRF-TOKEN": csrfToken,
+        }
+      : {},
+    // /loginへのリダイレクトなどを登録成功として扱わない。
+    redirect: "error",
+  });
 };
 
 // 変動費更新

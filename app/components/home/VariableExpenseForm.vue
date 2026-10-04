@@ -40,6 +40,7 @@ const errors = ref({
   categoryId: "",
   amount: "",
   paymentMethodId: "",
+  transactionName: "",
   memo: "",
 });
 
@@ -90,6 +91,10 @@ watch(paymentMethodId, () => {
   errors.value.paymentMethodId = "";
 });
 
+watch(transactionName, () => {
+  errors.value.transactionName = "";
+});
+
 watch(memo, () => {
   errors.value.memo = "";
 });
@@ -115,6 +120,7 @@ function setFormValues(expense) {
     categoryId: "",
     amount: "",
     paymentMethodId: "",
+    transactionName: "",
     memo: "",
   };
 }
@@ -126,6 +132,7 @@ const validate = () => {
     categoryId: "",
     amount: "",
     paymentMethodId: "",
+    transactionName: "",
     memo: "",
   };
 
@@ -158,6 +165,12 @@ const validate = () => {
     isValid = false;
   }
 
+  // 内容チェック。
+  if (!isRequired(transactionName.value)) {
+    errors.value.transactionName = REQUIRED_MESSAGE;
+    isValid = false;
+  }
+
   // メモ文字数チェック。
   if (!isWithinMaxLength(memo.value, 500)) {
     errors.value.memo = MAX_LENGTH_500_MESSAGE;
@@ -180,10 +193,16 @@ const getFormData = () => {
   };
 };
 
+// 新規登録完了後に入力フォームを初期化する。
+const clearForm = () => {
+  setFormValues(null);
+};
+
 // 親コンポーネントから呼べるようにする。
 defineExpose({
   validate,
   getFormData,
+  clearForm,
 });
 </script>
 
@@ -296,16 +315,23 @@ defineExpose({
 
     <!-- 内容 -->
     <div class="mb-3">
-      <label for="variable-transaction-name" class="form-label"> 内容 </label>
+      <label for="variable-transaction-name" class="form-label">
+        内容 <span class="text-danger">*</span>
+      </label>
 
       <input
         id="variable-transaction-name"
         v-model="transactionName"
         type="text"
         class="form-control"
+        :class="{ 'is-invalid': errors.transactionName }"
         maxlength="255"
         placeholder="例：昼食、シャンプーなど"
       />
+
+      <div v-if="errors.transactionName" class="invalid-feedback">
+        {{ errors.transactionName }}
+      </div>
     </div>
 
     <!-- 店名 -->
