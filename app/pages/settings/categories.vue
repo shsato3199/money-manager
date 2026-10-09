@@ -1,39 +1,29 @@
 <script setup>
 // ========================
-// ① 状態
+// ① import
+// ========================
+import { fetchCategories, createCategory } from "~/api/categoryApi";
+
+// ========================
+// ② 状態
 // ========================
 
 // カテゴリ一覧
-// 現在はAPI未接続なので仮データ
-const categoryList = ref([
-  {
-    id: 1,
-    name: "食費",
-    displayOrder: 1,
-  },
-  {
-    id: 2,
-    name: "日用品",
-    displayOrder: 2,
-  },
-  {
-    id: 3,
-    name: "交通費",
-    displayOrder: 3,
-  },
-  {
-    id: 4,
-    name: "趣味",
-    displayOrder: 4,
-  },
-]);
-
+const categoryList = ref([]);
+// 登録エラーメッセージ
+const registerErrorMessage = ref("");
+// 登録成功メッセージ
+const registerSuccessMessage = ref("");
+// 一覧取得エラーメッセージ
+const listErrorMessage = ref("");
+// 登録フォームの参照
+const categoryRegisterFormRef = ref(null);
 // 編集モーダル
 const isEditModalOpen = ref(false);
 const editingCategory = ref(null);
 
 // ========================
-// ② 関数
+// ③ 関数
 // ========================
 
 // 表示順で並び替える
@@ -41,24 +31,55 @@ const sortCategoryList = () => {
   categoryList.value.sort((a, b) => a.displayOrder - b.displayOrder);
 };
 
+// カテゴリ一覧取得
+const fetchCategoryList = async () => {
+  // 一覧取得エラーメッセージを初期化する。
+  listErrorMessage.value = "";
+  try {
+    // カテゴリ一覧取得API
+    categoryList.value = await fetchCategories();
+  } catch (error) {
+    console.error("カテゴリ一覧の取得に失敗しました。", error);
+
+    // 一覧取得失敗時のエラーメッセージを設定する。
+    listErrorMessage.value =
+      "カテゴリ一覧の取得に失敗しました。再読み込みしてください。";
+  }
+};
+
 // カテゴリ登録
-const registerCategory = (newCategory) => {
-  // 仮IDを採番
-  const nextId =
-    categoryList.value.length === 0
-      ? 1
-      : Math.max(...categoryList.value.map((category) => category.id)) + 1;
+const registerCategory = async (newCategory) => {
+  // 登録結果のメッセージを初期化する。
+  registerErrorMessage.value = "";
+  registerSuccessMessage.value = "";
 
-  // 新規登録は常に一番下
-  const newDisplayOrder = categoryList.value.length + 1;
-
-  categoryList.value.push({
-    id: nextId,
-    name: newCategory.name,
-    displayOrder: newDisplayOrder,
-  });
-
-  sortCategoryList();
+  // ========================
+  // カテゴリ登録
+  // ========================
+  try {
+    // カテゴリ登録API
+    await createCategory(newCategory);
+  } catch (error) {
+    console.error("カテゴリ登録に失敗しました。", error);
+    // カテゴリ名が重複している場合。
+    if (error.response?.status === 409) {
+      registerErrorMessage.value = "同じ名前のカテゴリが既に登録されています。";
+    } else {
+      registerErrorMessage.value = "カテゴリの登録に失敗しました。";
+    }
+    // 登録に失敗した場合は、以降の処理を実行しない。
+    return;
+  }
+  // ========================
+  // 登録成功後の処理
+  // ========================
+  // 登録成功後にフォームを初期化する。
+  categoryRegisterFormRef.value?.handleRegisterSuccess();
+  // 登録成功メッセージを表示する。
+  registerSuccessMessage.value = "登録しました";
+  // カテゴリ一覧を再取得する。
+  // 一覧取得に失敗した場合はfetchCategoryList()内でエラーを処理する。
+  await fetchCategoryList();
 };
 
 // 編集モーダルを開く
@@ -148,6 +169,10 @@ const deleteCategory = (categoryId) => {
   sortCategoryList();
   closeEditModal();
 };
+
+onMounted(async () => {
+  await fetchCategoryList();
+});
 </script>
 
 <template>
@@ -160,6 +185,10 @@ const deleteCategory = (categoryId) => {
         支出登録時に使用するカテゴリを管理します。
       </p>
     </div>
+    <!-- カテゴリ一覧取得エラー -->
+    <div v-if="listErrorMessage" class="alert alert-danger" role="alert">
+      {{ listErrorMessage }}
+    </div>
 
     <!-- 登録済みカテゴリ -->
     <CategoriesCategorySettingTable
@@ -168,7 +197,23 @@ const deleteCategory = (categoryId) => {
     />
 
     <!-- カテゴリ登録 -->
-    <CategoriesCategoryRegisterForm @register="registerCategory" />
+    <CategoriesCategoryRegisterForm
+      ref="categoryRegisterFormRef"
+      @register="registerCategory"
+    />
+    <!-- カテゴリ登録エラー -->
+    <div v-if="registerErrorMessage" class="alert alert-danger" role="alert">
+      {{ registerErrorMessage }}
+    </div>
+
+    <!-- カテゴリ登録成功 -->
+    <div
+      v-if="registerSuccessMessage"
+      class="alert alert-success"
+      role="status"
+    >
+      {{ registerSuccessMessage }}
+    </div>
 
     <!-- 編集モーダル -->
     <CategoriesCategoryEditModal

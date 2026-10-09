@@ -55,14 +55,21 @@ const registerCategory = () => {
   emit("register", {
     name: categoryName.value.trim(),
   });
+};
 
-  // 登録後に初期化
+// 登録成功後にフォームを初期化する。
+const handleRegisterSuccess = () => {
   categoryName.value = "";
 
   errors.value = {
     categoryName: "",
   };
 };
+
+// 親コンポーネントから呼び出せるようにする。
+defineExpose({
+  handleRegisterSuccess,
+});
 </script>
 
 <template>
