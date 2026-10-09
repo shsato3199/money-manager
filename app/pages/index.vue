@@ -6,7 +6,10 @@ import {
   fetchPaymentSummary,
 } from "../api/summaryApi";
 import { fetchExpenses } from "../api/expenseApi";
-import { fetchFixedExpenses } from "../api/fixedExpenseApi";
+import {
+  fetchFixedExpenses,
+  generateFixedExpenses,
+} from "../api/fixedExpenseApi";
 
 // ========================
 // ① 状態
@@ -128,8 +131,12 @@ const fetchVariableExpenses = async () => {
   }
 };
 
-// ホーム画面に表示する一覧・集計をまとめて取得する。
+// ホーム画面の一覧・集計データを取得する。
 const fetchHomeData = async () => {
+  // 固定費の未生成月分を自動生成する。
+  await generateFixedExpenses();
+
+  // 固定費自動生成完了後、一覧・集計データを取得する。
   await Promise.all([
     fetchMonthlySummaryData(),
     fetchCategorySummaryData(),

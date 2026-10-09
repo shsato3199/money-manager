@@ -41,7 +41,22 @@ export const createFixedExpense = async (fixedExpense) => {
     redirect: "error",
   });
 };
+// 固定費の未生成月分を自動生成する。
+export const generateFixedExpenses = async () => {
+  const apiBaseUrl = getApiBaseUrl();
+  const csrfToken = getCsrfToken();
 
+  return await $fetch(`${apiBaseUrl}/api/fixed-expenses/generate`, {
+    method: "POST",
+    credentials: "include",
+    headers: csrfToken
+      ? {
+          "X-XSRF-TOKEN": csrfToken,
+        }
+      : {},
+    redirect: "error",
+  });
+};
 // 固定費更新
 export const updateFixedExpense = async (id, fixedExpense) => {
   // PUT
