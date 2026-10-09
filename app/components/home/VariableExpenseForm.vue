@@ -13,12 +13,18 @@ import {
 // ① props
 // ========================
 
-// 編集する変動費。
-// 新規登録時はnull。
 const props = defineProps({
+  // 編集する変動費。
+  // 新規登録時はnull。
   expense: {
     type: Object,
     default: null,
+  },
+
+  // 親コンポーネントから受け取るカテゴリ一覧。
+  categoryList: {
+    type: Array,
+    required: true,
   },
 });
 
@@ -44,14 +50,6 @@ const errors = ref({
   transactionName: "",
   memo: "",
 });
-
-// 仮のカテゴリ一覧。
-const categoryList = ref([
-  { id: 1, name: "食費" },
-  { id: 2, name: "日用品" },
-  { id: 3, name: "交通費" },
-  { id: 4, name: "趣味" },
-]);
 
 // 仮の支払元一覧。
 const paymentMethodList = ref([
@@ -252,7 +250,7 @@ defineExpose({
         <option value="" disabled>カテゴリを選択してください</option>
 
         <option
-          v-for="category in categoryList"
+          v-for="category in props.categoryList"
           :key="category.id"
           :value="category.id"
         >

@@ -1,6 +1,12 @@
 <script setup>
 // ========================
-// ① props / emits
+// ① import
+// ========================
+
+import { fetchCategories } from "~/api/categoryApi";
+
+// ========================
+// ② props / emits
 // ========================
 
 const props = defineProps({
@@ -20,7 +26,7 @@ const props = defineProps({
 const emit = defineEmits(["close", "register", "update"]);
 
 // ========================
-// ② 状態
+// ③ 状態
 // ========================
 
 // 変動費フォームのコンポーネント参照。
@@ -29,8 +35,14 @@ const variableExpenseFormRef = ref(null);
 // 新規登録完了メッセージの表示状態。
 const isRegisterSuccess = ref(false);
 
+// カテゴリ一覧。
+const categoryList = ref([]);
+
+// カテゴリ一覧取得エラーメッセージ。
+const categoryLoadError = ref("");
+
 // ========================
-// ③ computed
+// ④ computed
 // ========================
 
 // 編集対象がある場合は編集モード。
@@ -39,7 +51,47 @@ const isEditMode = computed(() => {
 });
 
 // ========================
-// ④ 関数
+// ⑤ watch
+// ========================
+
+// モーダルが開いたタイミングでカテゴリ一覧を取得する。
+watch(
+  () => props.isOpen,
+  async (isOpen) => {
+    // モーダルを閉じた場合は取得しない。
+    if (!isOpen) {
+      return;
+    }
+
+    await fetchCategoryList();
+  },
+);
+
+// ========================
+// ⑥ API通信
+// ========================
+
+// カテゴリ一覧取得。
+const fetchCategoryList = async () => {
+  // 前回の取得エラーメッセージを初期化する。
+  categoryLoadError.value = "";
+
+  try {
+    // カテゴリ一覧取得API。
+    categoryList.value = await fetchCategories();
+  } catch (error) {
+    console.error("カテゴリ一覧の取得に失敗しました。", error);
+
+    // 取得失敗時はカテゴリ一覧を空にする。
+    categoryList.value = [];
+
+    // エラーメッセージを設定する。
+    categoryLoadError.value = "カテゴリ一覧の取得に失敗しました。";
+  }
+};
+
+// ========================
+// ⑦ 関数
 // ========================
 
 // モーダルを閉じる。
@@ -52,6 +104,7 @@ const closeModal = () => {
 
 // 登録・修正ボタン押下時。
 const handleRegister = () => {
+  // 入力チェックを実行する。
   const isValid = variableExpenseFormRef.value?.validate();
 
   // 入力エラーがある場合は終了。
@@ -98,7 +151,6 @@ defineExpose({
   handleRegisterSuccess,
 });
 </script>
-
 <template>
   <Teleport to="body">
     <template v-if="isOpen">
@@ -128,6 +180,14 @@ defineExpose({
 
             <!-- 本文 -->
             <div class="modal-body">
+              <!-- カテゴリ一覧取得エラー -->
+              <div
+                v-if="categoryLoadError"
+                class="alert alert-danger"
+                role="alert"
+              >
+                {{ categoryLoadError }}
+              </div>
               <!-- 登録完了メッセージ -->
               <div
                 v-if="isRegisterSuccess"
@@ -146,6 +206,7 @@ defineExpose({
               <HomeVariableExpenseForm
                 ref="variableExpenseFormRef"
                 :expense="expense"
+                :category-list="categoryList"
               />
             </div>
 
