@@ -1,6 +1,7 @@
+import { getCsrfToken } from "~/utils/csrf";
 import { getApiBaseUrl } from "./apiConfig";
 
-// 固定費一覧取得
+// 固定費一覧取得(Home画面で表示するための固定費一覧ß)
 export const fetchFixedExpenses = async (year, month) => {
   const apiBaseUrl = getApiBaseUrl();
 
@@ -14,10 +15,31 @@ export const fetchFixedExpenses = async (year, month) => {
     credentials: "include",
   });
 };
+// 固定費設定一覧取得。
+export const fetchFixedExpenseTemplates = async () => {
+  const apiBaseUrl = getApiBaseUrl();
 
+  return await $fetch(`${apiBaseUrl}/api/fixed-expenses/templates`, {
+    // Cookieなどの認証情報も一緒に送る指定。
+    credentials: "include",
+  });
+};
 // 固定費登録
 export const createFixedExpense = async (fixedExpense) => {
-  // POST
+  const apiBaseUrl = getApiBaseUrl();
+  const csrfToken = getCsrfToken();
+
+  return await $fetch(`${apiBaseUrl}/api/fixed-expenses`, {
+    method: "POST",
+    body: fixedExpense,
+    credentials: "include",
+    headers: csrfToken
+      ? {
+          "X-XSRF-TOKEN": csrfToken,
+        }
+      : {},
+    redirect: "error",
+  });
 };
 
 // 固定費更新

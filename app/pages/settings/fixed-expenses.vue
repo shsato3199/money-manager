@@ -1,69 +1,37 @@
 <script setup>
 // ========================
-// ① 状態
+// ① import
 // ========================
 
-// 固定費設定一覧の仮データ。
-// API実装後は固定費設定一覧APIから取得する。
-const fixedExpenseList = ref([
-  {
-    id: 1,
-    fixedExpenseName: "家賃",
-    amount: 80000,
-    categoryId: 1,
-    categoryName: "住居費",
-    paymentMethodId: 3,
-    paymentMethodName: "横浜銀行",
-    paymentDay: 27,
-    startYearMonth: "2026-01",
-    endYearMonth: "",
-    autoGenerate: true,
-    memo: "○○マンション",
-    displayOrder: 1,
-  },
-  {
-    id: 2,
-    fixedExpenseName: "Netflix",
-    amount: 990,
-    categoryId: 2,
-    categoryName: "サブスクリプション",
-    paymentMethodId: 2,
-    paymentMethodName: "楽天カード",
-    paymentDay: 28,
-    startYearMonth: "2026-08",
-    endYearMonth: "",
-    autoGenerate: true,
-    memo: "",
-    displayOrder: 2,
-  },
-  {
-    id: 3,
-    fixedExpenseName: "駐車場代",
-    amount: 12000,
-    categoryId: 1,
-    categoryName: "住居費",
-    paymentMethodId: 3,
-    paymentMethodName: "横浜銀行",
-    paymentDay: 27,
-    startYearMonth: "2026-01",
-    endYearMonth: "",
-    autoGenerate: true,
-    memo: "月極駐車場",
-    displayOrder: 3,
-  },
-]);
+import { fetchCategories } from "~/api/categoryApi";
+import {
+  createFixedExpense,
+  fetchFixedExpenseTemplates,
+} from "~/api/fixedExpenseApi";
+
+// ========================
+// ② 状態
+// ========================
+
+// DBから取得した固定費設定一覧。
+const fixedExpenseList = ref([]);
+// 固定費設定一覧取得エラーメッセージ。
+const fixedExpenseListErrorMessage = ref("");
+// 登録済み固定費一覧のコンポーネント参照。
+const fixedExpenseSettingTableRef = ref(null);
+// 固定費登録エラーメッセージ。
+const registerErrorMessage = ref("");
+// 固定費登録成功メッセージ。
+const registerSuccessMessage = ref("");
 
 // 編集モーダル
 const isEditModalOpen = ref(false);
 const editingFixedExpense = ref(null);
 
-// 仮カテゴリ一覧。
-const categoryList = [
-  { id: 1, name: "住居費" },
-  { id: 2, name: "サブスクリプション" },
-  { id: 3, name: "通信費" },
-  { id: 4, name: "保険" },
-];
+// DBから取得したカテゴリ一覧。
+const categoryList = ref([]);
+// カテゴリ一覧取得エラーメッセージ。
+const categoryListErrorMessage = ref("");
 
 // 仮支払元一覧。
 const paymentMethodList = [
@@ -71,26 +39,82 @@ const paymentMethodList = [
   { id: 2, name: "楽天カード" },
   { id: 3, name: "横浜銀行" },
 ];
+
 // ========================
-// ② 関数
+// ③ API通信
 // ========================
-const registerFixedExpense = (newFixedExpense) => {
-  const nextId =
-    fixedExpenseList.value.length === 0
-      ? 1
-      : Math.max(...fixedExpenseList.value.map((item) => item.id)) + 1;
+// 固定費設定一覧取得。
+const fetchFixedExpenseSettingList = async () => {
+  // 一覧取得エラーメッセージを初期化する。
+  fixedExpenseListErrorMessage.value = "";
 
-  // 新規登録時は常に末尾へ追加。
-  const newDisplayOrder = fixedExpenseList.value.length + 1;
+  try {
+    // 固定費設定一覧取得API。
+    const fixedExpenseTemplates = await fetchFixedExpenseTemplates();
 
-  fixedExpenseList.value.push({
-    id: nextId,
-    ...newFixedExpense,
-    displayOrder: newDisplayOrder,
-  });
+    // DBには表示順がないため、取得順に仮の表示順を設定する。
+    fixedExpenseList.value = fixedExpenseTemplates.map(
+      (fixedExpense, index) => ({
+        ...fixedExpense,
+        displayOrder: index + 1,
+      }),
+    );
+  } catch (error) {
+    console.error("固定費設定一覧の取得に失敗しました。", error);
 
-  sortFixedExpenseList();
+    fixedExpenseListErrorMessage.value =
+      "固定費設定一覧の取得に失敗しました。再読み込みしてください。";
+  }
 };
+
+// カテゴリ一覧取得。
+const fetchCategoryList = async () => {
+  categoryListErrorMessage.value = "";
+
+  try {
+    categoryList.value = await fetchCategories();
+  } catch (error) {
+    console.error("カテゴリ一覧の取得に失敗しました。", error);
+
+    categoryList.value = [];
+    categoryListErrorMessage.value =
+      "カテゴリ一覧の取得に失敗しました。再読み込みしてください。";
+  }
+};
+
+// ========================
+// ④ 関数
+// ========================
+// 固定費を登録する。
+const registerFixedExpense = async (newFixedExpense) => {
+  // 登録結果メッセージを初期化する。
+  registerErrorMessage.value = "";
+  registerSuccessMessage.value = "";
+
+  try {
+    // 固定費登録API。
+    await createFixedExpense(newFixedExpense);
+  } catch (error) {
+    console.error("固定費登録に失敗しました。", error);
+
+    registerErrorMessage.value = "固定費の登録に失敗しました。";
+    return;
+  }
+  // 登録成功メッセージを表示する。
+  registerSuccessMessage.value = "登録しました";
+  // 登録済み固定費のアコーディオンを閉じる。
+  fixedExpenseSettingTableRef.value?.closeAccordion();
+
+  // 固定費設定一覧を再取得する。
+  await fetchFixedExpenseSettingList();
+
+  // 登録完了後、画面上部へスクロールする。
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth",
+  });
+};
+
 // 表示順で並び替える。
 const sortFixedExpenseList = () => {
   fixedExpenseList.value.sort((a, b) => a.displayOrder - b.displayOrder);
@@ -203,10 +227,26 @@ const deleteFixedExpense = (fixedExpenseId) => {
 
   closeEditModal();
 };
+// ========================
+// ⑤ ライフサイクル
+// ========================
+
+// 画面初期表示時にカテゴリ一覧・固定費設定一覧を取得する。
+onMounted(async () => {
+  await Promise.all([fetchCategoryList(), fetchFixedExpenseSettingList()]);
+});
 </script>
 
 <template>
   <main class="container py-4 pb-5 mb-5">
+    <!-- 固定費登録成功メッセージ -->
+    <div
+      v-if="registerSuccessMessage"
+      class="alert alert-success mt-3"
+      role="alert"
+    >
+      {{ registerSuccessMessage }}
+    </div>
     <!-- 画面タイトル -->
     <div class="mb-4">
       <h1 class="h4 mb-1">固定費設定</h1>
@@ -219,9 +259,18 @@ const deleteFixedExpense = (fixedExpenseId) => {
     </div>
     <!-- 固定費一覧 -->
     <FixedExpensesFixedExpenseSettingTable
+      ref="fixedExpenseSettingTableRef"
       :fixed-expense-list="fixedExpenseList"
       @edit="openEditModal"
     />
+    <!-- 固定費設定一覧取得エラー -->
+    <div
+      v-if="fixedExpenseListErrorMessage"
+      class="alert alert-danger"
+      role="alert"
+    >
+      {{ fixedExpenseListErrorMessage }}
+    </div>
     <!-- 固定費新規登録 -->
     <FixedExpensesFixedExpenseRegisterForm
       :category-list="categoryList"

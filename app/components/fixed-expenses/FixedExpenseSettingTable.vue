@@ -28,6 +28,16 @@ const toggleAccordion = () => {
   isOpen.value = !isOpen.value;
 };
 
+// 親コンポーネントから一覧を閉じられるようにする。
+const closeAccordion = () => {
+  isOpen.value = false;
+};
+
+// 親コンポーネントから呼び出せるようにする。
+defineExpose({
+  closeAccordion,
+});
+
 // 編集要求を親へ通知する。
 const requestEdit = (fixedExpense) => {
   emit("edit", fixedExpense);
