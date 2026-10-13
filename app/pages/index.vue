@@ -133,8 +133,12 @@ const fetchVariableExpenses = async () => {
 
 // ホーム画面の一覧・集計データを取得する。
 const fetchHomeData = async () => {
-  // 固定費の未生成月分を自動生成する。
-  await generateFixedExpenses();
+  try {
+    // 固定費の未生成月分を自動生成する。
+    await generateFixedExpenses();
+  } catch (error) {
+    console.error("固定費の自動生成に失敗しました。", error);
+  }
 
   // 固定費自動生成完了後、一覧・集計データを取得する。
   await Promise.all([

@@ -57,12 +57,30 @@ export const generateFixedExpenses = async () => {
     redirect: "error",
   });
 };
-// 固定費更新
+
+// 固定費設定を更新する。
 export const updateFixedExpense = async (id, fixedExpense) => {
-  // PUT
+  const apiBaseUrl = getApiBaseUrl();
+  const csrfToken = getCsrfToken();
+
+  return await $fetch(`${apiBaseUrl}/api/fixed-expenses/templates/${id}`, {
+    method: "PUT",
+    body: fixedExpense,
+    credentials: "include",
+    headers: csrfToken ? { "X-XSRF-TOKEN": csrfToken } : {},
+    redirect: "error",
+  });
 };
 
-// 固定費削除
+// 固定費設定を論理削除する。
 export const deleteFixedExpense = async (id) => {
-  // DELETE
+  const apiBaseUrl = getApiBaseUrl();
+  const csrfToken = getCsrfToken();
+
+  return await $fetch(`${apiBaseUrl}/api/fixed-expenses/templates/${id}`, {
+    method: "DELETE",
+    credentials: "include",
+    headers: csrfToken ? { "X-XSRF-TOKEN": csrfToken } : {},
+    redirect: "error",
+  });
 };

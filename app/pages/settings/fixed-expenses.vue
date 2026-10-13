@@ -7,6 +7,8 @@ import { fetchCategories } from "~/api/categoryApi";
 import {
   createFixedExpense,
   fetchFixedExpenseTemplates,
+  updateFixedExpense as updateFixedExpenseApi,
+  deleteFixedExpense as deleteFixedExpenseApi,
 } from "~/api/fixedExpenseApi";
 import { fetchPaymentMethods } from "~/api/paymentMethodApi";
 
@@ -24,6 +26,10 @@ const fixedExpenseSettingTableRef = ref(null);
 const registerErrorMessage = ref("");
 // 固定費登録成功メッセージ。
 const registerSuccessMessage = ref("");
+// 固定費設定更新・削除エラーメッセージ。
+const editErrorMessage = ref("");
+// 固定費設定更新・削除成功メッセージ。
+const editSuccessMessage = ref("");
 
 // 編集モーダル
 const isEditModalOpen = ref(false);
@@ -56,11 +62,13 @@ const fetchFixedExpenseSettingList = async () => {
         displayOrder: index + 1,
       }),
     );
+    return true;
   } catch (error) {
     console.error("固定費設定一覧の取得に失敗しました。", error);
 
     fixedExpenseListErrorMessage.value =
       "固定費設定一覧の取得に失敗しました。再読み込みしてください。";
+    return false;
   }
 };
 
@@ -124,13 +132,12 @@ const registerFixedExpense = async (newFixedExpense) => {
   });
 };
 
-// 表示順で並び替える。
-const sortFixedExpenseList = () => {
-  fixedExpenseList.value.sort((a, b) => a.displayOrder - b.displayOrder);
-};
-
 // 編集モーダルを開く。
 const openEditModal = (fixedExpense) => {
+  // 更新・削除結果メッセージを初期化する。
+  editErrorMessage.value = "";
+  editSuccessMessage.value = "";
+
   editingFixedExpense.value = {
     ...fixedExpense,
   };
@@ -142,99 +149,64 @@ const openEditModal = (fixedExpense) => {
 const closeEditModal = () => {
   isEditModalOpen.value = false;
   editingFixedExpense.value = null;
+  // 更新・削除エラーメッセージを初期化する。
+  editErrorMessage.value = "";
 };
 
-// 編集内容を一覧へ反映する。
-const updateFixedExpense = (updatedFixedExpense) => {
-  const targetIndex = fixedExpenseList.value.findIndex(
-    (item) => item.id === updatedFixedExpense.id,
-  );
+// 固定費設定を更新する。
+const updateFixedExpense = async (updatedFixedExpense) => {
+  // 更新結果メッセージを初期化する。
+  editErrorMessage.value = "";
+  editSuccessMessage.value = "";
 
-  if (targetIndex === -1) {
+  // IDを除いたデータをAPIへ送信する。
+  const { id, ...requestBody } = updatedFixedExpense;
+
+  try {
+    // 固定費設定更新APIを呼び出す。
+    await updateFixedExpenseApi(id, requestBody);
+  } catch (error) {
+    console.error("固定費設定の更新に失敗しました。", error);
+
+    editErrorMessage.value =
+      "固定費設定の更新に失敗しました。入力内容をご確認ください。";
     return;
   }
 
-  const oldDisplayOrder = fixedExpenseList.value[targetIndex].displayOrder;
-
-  const newDisplayOrder = updatedFixedExpense.displayOrder;
-
-  // 後ろへ移動する場合。
-  if (oldDisplayOrder < newDisplayOrder) {
-    fixedExpenseList.value.forEach((item) => {
-      if (
-        item.id !== updatedFixedExpense.id &&
-        item.displayOrder > oldDisplayOrder &&
-        item.displayOrder <= newDisplayOrder
-      ) {
-        item.displayOrder -= 1;
-      }
-    });
-  }
-
-  // 前へ移動する場合。
-  if (oldDisplayOrder > newDisplayOrder) {
-    fixedExpenseList.value.forEach((item) => {
-      if (
-        item.id !== updatedFixedExpense.id &&
-        item.displayOrder >= newDisplayOrder &&
-        item.displayOrder < oldDisplayOrder
-      ) {
-        item.displayOrder += 1;
-      }
-    });
-  }
-
-  // カテゴリ名を取得。
-  const category = categoryList.value.find(
-    (item) => item.id === updatedFixedExpense.categoryId,
-  );
-
-  // 支払元名を取得。
-  const paymentMethod = paymentMethodList.value.find(
-    (item) => item.id === updatedFixedExpense.paymentMethodId,
-  );
-
-  fixedExpenseList.value[targetIndex] = {
-    ...updatedFixedExpense,
-    categoryName: category?.name ?? "",
-    paymentMethodName: paymentMethod?.name ?? "",
-  };
-
-  sortFixedExpenseList();
-
+  // 編集モーダルを閉じる。
   closeEditModal();
+
+  // 更新成功メッセージを表示する。
+  editSuccessMessage.value = "固定費設定を更新しました。";
+
+  // 更新後の固定費設定一覧を再取得する。
+  await fetchFixedExpenseSettingList();
 };
 
-// 固定費設定を削除する。
-const deleteFixedExpense = (fixedExpenseId) => {
-  // 固定費は最低1件残す。
-  if (fixedExpenseList.value.length <= 1) {
+// 固定費設定を論理削除する。
+const deleteFixedExpense = async (fixedExpenseId) => {
+  // 削除結果メッセージを初期化する。
+  editErrorMessage.value = "";
+  editSuccessMessage.value = "";
+
+  try {
+    // 固定費設定削除APIを呼び出す。
+    await deleteFixedExpenseApi(fixedExpenseId);
+  } catch (error) {
+    console.error("固定費設定の削除に失敗しました。", error);
+
+    editErrorMessage.value = "固定費設定の削除に失敗しました。";
     return;
   }
 
-  const targetIndex = fixedExpenseList.value.findIndex(
-    (item) => item.id === fixedExpenseId,
-  );
-
-  if (targetIndex === -1) {
-    return;
-  }
-
-  const deletedDisplayOrder = fixedExpenseList.value[targetIndex].displayOrder;
-
-  // 仮実装なので配列から削除する。
-  fixedExpenseList.value.splice(targetIndex, 1);
-
-  // 削除した表示順より後ろを前へ詰める。
-  fixedExpenseList.value.forEach((item) => {
-    if (item.displayOrder > deletedDisplayOrder) {
-      item.displayOrder -= 1;
-    }
-  });
-
-  sortFixedExpenseList();
-
+  // 編集モーダルを閉じる。
   closeEditModal();
+
+  // 削除成功メッセージを表示する。
+  editSuccessMessage.value = "固定費設定を削除しました。";
+
+  // 削除後の固定費設定一覧を再取得する。
+  await fetchFixedExpenseSettingList();
 };
 // ========================
 // ⑤ ライフサイクル
@@ -260,6 +232,15 @@ onMounted(async () => {
     >
       {{ registerSuccessMessage }}
     </div>
+    <!-- 固定費設定更新・削除成功メッセージ -->
+    <div
+      v-if="editSuccessMessage"
+      class="alert alert-success mt-3"
+      role="alert"
+    >
+      {{ editSuccessMessage }}
+    </div>
+
     <!-- 画面タイトル -->
     <div class="mb-4">
       <h1 class="h4 mb-1">固定費設定</h1>
@@ -296,7 +277,7 @@ onMounted(async () => {
       :fixed-expense="editingFixedExpense"
       :category-list="categoryList"
       :payment-method-list="paymentMethodList"
-      :max-display-order="fixedExpenseList.length"
+      :api-error-message="editErrorMessage"
       @close="closeEditModal"
       @update="updateFixedExpense"
       @delete="deleteFixedExpense"

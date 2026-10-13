@@ -28,6 +28,12 @@ const props = defineProps({
     default: null,
   },
 
+  // 固定費設定更新・削除APIのエラーメッセージ。
+  apiErrorMessage: {
+    type: String,
+    default: "",
+  },
+
   categoryList: {
     type: Array,
     required: true,
@@ -35,11 +41,6 @@ const props = defineProps({
 
   paymentMethodList: {
     type: Array,
-    required: true,
-  },
-
-  maxDisplayOrder: {
-    type: Number,
     required: true,
   },
 });
@@ -59,14 +60,11 @@ const startYearMonth = ref("");
 const endYearMonth = ref("");
 const autoGenerate = ref(true);
 const memo = ref("");
-const displayOrder = ref("");
 
 // 確認モーダル
 // null   : 非表示
 // DELETE : 削除確認
 const confirmationType = ref(null);
-// 最後の1件を削除しようとした場合のエラーメッセージ。
-const deleteErrorMessage = ref("");
 
 const errors = ref({
   fixedExpenseName: "",
@@ -77,7 +75,6 @@ const errors = ref({
   startYearMonth: "",
   endYearMonth: "",
   memo: "",
-  displayOrder: "",
 });
 
 // ========================
@@ -101,7 +98,6 @@ watch(
     endYearMonth.value = fixedExpense.endYearMonth ?? "";
     autoGenerate.value = fixedExpense.autoGenerate;
     memo.value = fixedExpense.memo ?? "";
-    displayOrder.value = fixedExpense.displayOrder;
 
     errors.value = {
       fixedExpenseName: "",
@@ -112,10 +108,9 @@ watch(
       startYearMonth: "",
       endYearMonth: "",
       memo: "",
-      displayOrder: "",
     };
+
     confirmationType.value = null;
-    deleteErrorMessage.value = "";
   },
   {
     immediate: true,
@@ -155,22 +150,9 @@ watch(memo, () => {
   errors.value.memo = "";
 });
 
-watch(displayOrder, () => {
-  errors.value.displayOrder = "";
-});
-
 // ========================
 // ⑤ 関数
 // ========================
-
-// 表示順チェック。
-const isValidDisplayOrder = (value) => {
-  const order = Number(value);
-
-  return (
-    Number.isInteger(order) && order >= 1 && order <= props.maxDisplayOrder
-  );
-};
 
 // 入力チェック。
 const validate = () => {
@@ -183,7 +165,6 @@ const validate = () => {
     startYearMonth: "",
     endYearMonth: "",
     memo: "",
-    displayOrder: "",
   };
 
   let isValid = true;
@@ -245,21 +226,12 @@ const validate = () => {
     isValid = false;
   }
 
-  // 表示順
-  if (!isRequired(displayOrder.value)) {
-    errors.value.displayOrder = REQUIRED_MESSAGE;
-    isValid = false;
-  } else if (!isValidDisplayOrder(displayOrder.value)) {
-    errors.value.displayOrder = `表示順は1〜${props.maxDisplayOrder}の整数で入力してください。`;
-    isValid = false;
-  }
   return isValid;
 };
 
 // 編集モーダルを閉じる。
 const closeModal = () => {
   confirmationType.value = null;
-  deleteErrorMessage.value = "";
   emit("close");
 };
 
@@ -268,13 +240,6 @@ const openDeleteConfirmation = () => {
   if (!props.fixedExpense) {
     return;
   }
-  // 固定費は最低1件必要なため、最後の1件は削除できない。
-  if (props.maxDisplayOrder <= 1) {
-    deleteErrorMessage.value =
-      "固定費をすべて削除することはできません。名称などの変更は可能です。";
-    return;
-  }
-  deleteErrorMessage.value = "";
   confirmationType.value = "DELETE";
 };
 
@@ -300,7 +265,6 @@ const updateFixedExpense = () => {
     endYearMonth: endYearMonth.value,
     autoGenerate: autoGenerate.value,
     memo: memo.value,
-    displayOrder: Number(displayOrder.value),
   });
 };
 
@@ -342,6 +306,15 @@ const deleteFixedExpense = () => {
 
             <!-- 本文 -->
             <div class="modal-body">
+              <!-- 固定費設定更新・削除APIのエラーメッセージ -->
+              <div
+                v-if="apiErrorMessage"
+                class="alert alert-danger"
+                role="alert"
+              >
+                {{ apiErrorMessage }}
+              </div>
+
               <!-- 固定費名 -->
               <div class="mb-3">
                 <label for="edit-fixed-expense-name" class="form-label">
@@ -536,6 +509,7 @@ const deleteFixedExpense = () => {
                   v-model="autoGenerate"
                   class="form-check-input"
                   type="checkbox"
+                  disabled
                 />
 
                 <label class="form-check-label" for="edit-fixed-auto-generate">
@@ -562,31 +536,6 @@ const deleteFixedExpense = () => {
                   {{ errors.memo }}
                 </div>
               </div>
-
-              <!-- 表示順 -->
-              <div class="mb-0">
-                <label for="edit-fixed-display-order" class="form-label">
-                  表示順
-                  <span class="text-danger"> * </span>
-                </label>
-
-                <input
-                  id="edit-fixed-display-order"
-                  v-model.number="displayOrder"
-                  type="number"
-                  min="1"
-                  :max="maxDisplayOrder"
-                  step="1"
-                  class="form-control"
-                  :class="{
-                    'is-invalid': errors.displayOrder,
-                  }"
-                />
-
-                <div v-if="errors.displayOrder" class="invalid-feedback">
-                  {{ errors.displayOrder }}
-                </div>
-              </div>
             </div>
 
             <!-- フッター -->
@@ -598,13 +547,6 @@ const deleteFixedExpense = () => {
               >
                 削除
               </button>
-
-              <div
-                v-if="deleteErrorMessage"
-                class="text-danger small ms-3 me-auto"
-              >
-                {{ deleteErrorMessage }}
-              </div>
 
               <div class="d-flex gap-2">
                 <button
