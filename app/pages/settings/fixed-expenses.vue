@@ -8,6 +8,7 @@ import {
   createFixedExpense,
   fetchFixedExpenseTemplates,
 } from "~/api/fixedExpenseApi";
+import { fetchPaymentMethods } from "~/api/paymentMethodApi";
 
 // ========================
 // ② 状態
@@ -33,12 +34,8 @@ const categoryList = ref([]);
 // カテゴリ一覧取得エラーメッセージ。
 const categoryListErrorMessage = ref("");
 
-// 仮支払元一覧。
-const paymentMethodList = [
-  { id: 1, name: "現金" },
-  { id: 2, name: "楽天カード" },
-  { id: 3, name: "横浜銀行" },
-];
+// 支払元一覧。
+const paymentMethodList = ref([]);
 
 // ========================
 // ③ API通信
@@ -79,6 +76,18 @@ const fetchCategoryList = async () => {
     categoryList.value = [];
     categoryListErrorMessage.value =
       "カテゴリ一覧の取得に失敗しました。再読み込みしてください。";
+  }
+};
+
+// 支払元一覧取得。
+const fetchPaymentMethodList = async () => {
+  try {
+    // 支払元一覧取得API。
+    paymentMethodList.value = await fetchPaymentMethods();
+  } catch (error) {
+    console.error("支払元一覧の取得に失敗しました。", error);
+
+    paymentMethodList.value = [];
   }
 };
 
@@ -176,12 +185,12 @@ const updateFixedExpense = (updatedFixedExpense) => {
   }
 
   // カテゴリ名を取得。
-  const category = categoryList.find(
+  const category = categoryList.value.find(
     (item) => item.id === updatedFixedExpense.categoryId,
   );
 
   // 支払元名を取得。
-  const paymentMethod = paymentMethodList.find(
+  const paymentMethod = paymentMethodList.value.find(
     (item) => item.id === updatedFixedExpense.paymentMethodId,
   );
 
@@ -233,7 +242,11 @@ const deleteFixedExpense = (fixedExpenseId) => {
 
 // 画面初期表示時にカテゴリ一覧・固定費設定一覧を取得する。
 onMounted(async () => {
-  await Promise.all([fetchCategoryList(), fetchFixedExpenseSettingList()]);
+  await Promise.all([
+    fetchCategoryList(),
+    fetchFixedExpenseSettingList(),
+    fetchPaymentMethodList(),
+  ]);
 });
 </script>
 

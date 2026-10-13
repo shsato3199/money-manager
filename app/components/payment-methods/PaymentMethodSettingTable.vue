@@ -32,6 +32,16 @@ const toggleAccordion = () => {
   isOpen.value = !isOpen.value;
 };
 
+// 登録成功後に一覧を閉じる。
+const closeAccordion = () => {
+  isOpen.value = false;
+};
+
+// 親コンポーネントから呼び出せるようにする。
+defineExpose({
+  closeAccordion,
+});
+
 // 支払元種別の値から表示名を取得する。
 const getPaymentTypeLabel = (value) => {
   return (

@@ -4,7 +4,7 @@
 // ========================
 
 import { fetchCategories } from "~/api/categoryApi";
-
+import { fetchPaymentMethods } from "~/api/paymentMethodApi";
 // ========================
 // ② props / emits
 // ========================
@@ -37,9 +37,13 @@ const isRegisterSuccess = ref(false);
 
 // カテゴリ一覧。
 const categoryList = ref([]);
-
 // カテゴリ一覧取得エラーメッセージ。
 const categoryLoadError = ref("");
+
+// 支払元一覧。
+const paymentMethodList = ref([]);
+// 支払元一覧取得エラーメッセージ。
+const paymentMethodLoadError = ref("");
 
 // ========================
 // ④ computed
@@ -62,8 +66,8 @@ watch(
     if (!isOpen) {
       return;
     }
-
-    await fetchCategoryList();
+    // カテゴリ一覧・支払元一覧を取得する。
+    await Promise.all([fetchCategoryList(), fetchPaymentMethodList()]);
   },
 );
 
@@ -87,6 +91,24 @@ const fetchCategoryList = async () => {
 
     // エラーメッセージを設定する。
     categoryLoadError.value = "カテゴリ一覧の取得に失敗しました。";
+  }
+};
+// 支払元一覧取得。
+const fetchPaymentMethodList = async () => {
+  // エラーメッセージを初期化する。
+  paymentMethodLoadError.value = "";
+
+  try {
+    // 支払元一覧取得API。
+    paymentMethodList.value = await fetchPaymentMethods();
+  } catch (error) {
+    console.error("支払元一覧の取得に失敗しました。", error);
+
+    // 取得失敗時は一覧を空にする。
+    paymentMethodList.value = [];
+
+    // エラーメッセージを設定する。
+    paymentMethodLoadError.value = "支払元一覧の取得に失敗しました。";
   }
 };
 
@@ -188,6 +210,14 @@ defineExpose({
               >
                 {{ categoryLoadError }}
               </div>
+              <!-- 支払元一覧取得エラー -->
+              <div
+                v-if="paymentMethodLoadError"
+                class="alert alert-danger"
+                role="alert"
+              >
+                {{ paymentMethodLoadError }}
+              </div>
               <!-- 登録完了メッセージ -->
               <div
                 v-if="isRegisterSuccess"
@@ -207,6 +237,7 @@ defineExpose({
                 ref="variableExpenseFormRef"
                 :expense="expense"
                 :category-list="categoryList"
+                :payment-method-list="paymentMethodList"
               />
             </div>
 

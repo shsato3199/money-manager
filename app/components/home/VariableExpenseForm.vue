@@ -26,6 +26,12 @@ const props = defineProps({
     type: Array,
     required: true,
   },
+
+  // 親コンポーネントから受け取る支払元一覧。
+  paymentMethodList: {
+    type: Array,
+    required: true,
+  },
 });
 
 // ========================
@@ -50,13 +56,6 @@ const errors = ref({
   transactionName: "",
   memo: "",
 });
-
-// 仮の支払元一覧。
-const paymentMethodList = ref([
-  { id: 1, name: "現金" },
-  { id: 2, name: "楽天カード" },
-  { id: 3, name: "かんぽ" },
-]);
 
 // ========================
 // ③ watch

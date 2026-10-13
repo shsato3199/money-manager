@@ -1,31 +1,25 @@
 <script setup>
 import { REQUIRED_MESSAGE, isRequired } from "~/utils/validation";
-
+import {
+  fetchPaymentMethods,
+  createPaymentMethod,
+} from "~/api/paymentMethodApi";
 // ========================
 // ① 状態
 // ========================
 
-// 支払元一覧の仮データ。
-const paymentMethodList = ref([
-  {
-    id: 1,
-    name: "現金",
-    paymentType: "CASH",
-    displayOrder: 1,
-  },
-  {
-    id: 2,
-    name: "楽天カード",
-    paymentType: "CREDIT_CARD",
-    displayOrder: 2,
-  },
-  {
-    id: 3,
-    name: "横浜銀行",
-    paymentType: "BANK",
-    displayOrder: 3,
-  },
-]);
+// 支払元一覧。
+const paymentMethodList = ref([]);
+// 支払元一覧テーブルの参照。
+const paymentMethodSettingTableRef = ref(null);
+
+// 登録エラーメッセージ。
+const registerErrorMessage = ref("");
+// 登録成功メッセージ。
+const registerSuccessMessage = ref("");
+
+// 一覧取得エラーメッセージ。
+const listErrorMessage = ref("");
 
 // 新規登録フォーム
 const paymentMethodName = ref("");
@@ -43,7 +37,7 @@ const editingPaymentMethod = ref(null);
 // 支払種別
 const paymentTypeList = [
   { value: "CASH", label: "現金" },
-  { value: "BANK", label: "銀行口座" },
+  { value: "BANK_ACCOUNT", label: "銀行口座" },
   {
     value: "CREDIT_CARD",
     label: "クレジットカード",
@@ -64,7 +58,81 @@ watch(paymentType, () => {
 });
 
 // ========================
-// ③ 関数
+// ③ API通信
+// ========================
+
+// 支払元一覧取得。
+const fetchPaymentMethodList = async () => {
+  // 一覧取得エラーメッセージを初期化する。
+  listErrorMessage.value = "";
+
+  try {
+    // 支払元一覧取得API。
+    paymentMethodList.value = await fetchPaymentMethods();
+  } catch (error) {
+    console.error("支払元一覧の取得に失敗しました。", error);
+
+    // 取得失敗時は一覧を空にする。
+    paymentMethodList.value = [];
+
+    // エラーメッセージを設定する。
+    listErrorMessage.value =
+      "支払元一覧の取得に失敗しました。再読み込みしてください。";
+  }
+};
+// 支払元登録。
+const registerPaymentMethod = async () => {
+  // 入力チェック。
+  if (!validateRegister()) {
+    return;
+  }
+
+  // 登録結果のメッセージを初期化する。
+  registerErrorMessage.value = "";
+  registerSuccessMessage.value = "";
+
+  try {
+    // 支払元登録API。
+    await createPaymentMethod({
+      name: paymentMethodName.value.trim(),
+      paymentType: paymentType.value,
+    });
+  } catch (error) {
+    console.error("支払元登録に失敗しました。", error);
+
+    // 支払元名が重複している場合。
+    if (error.response?.status === 409) {
+      registerErrorMessage.value = "同じ名前の支払元が既に登録されています。";
+    } else {
+      registerErrorMessage.value = "支払元の登録に失敗しました。";
+    }
+
+    // 登録失敗時は以降の処理を実行しない。
+    return;
+  }
+
+  // 入力欄を初期化する。
+  paymentMethodName.value = "";
+  paymentType.value = "";
+
+  // 登録成功メッセージを表示する。
+  registerSuccessMessage.value = "登録しました";
+
+  // 登録成功後は支払元一覧を閉じる。
+  paymentMethodSettingTableRef.value?.closeAccordion();
+
+  // 支払元一覧を再取得する。
+  await fetchPaymentMethodList();
+  // 登録成功後は画面の一番上へスクロールする。
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth",
+  });
+};
+
+// ========================
+// ④ 関数
 // ========================
 
 // 新規登録入力チェック
@@ -92,34 +160,6 @@ const validateRegister = () => {
 // 表示順で並び替える
 const sortPaymentMethodList = () => {
   paymentMethodList.value.sort((a, b) => a.displayOrder - b.displayOrder);
-};
-
-// 新規登録
-const registerPaymentMethod = () => {
-  if (!validateRegister()) {
-    return;
-  }
-
-  const nextId =
-    paymentMethodList.value.length === 0
-      ? 1
-      : Math.max(...paymentMethodList.value.map((item) => item.id)) + 1;
-  // 新規登録時は常に現在の一覧の末尾へ追加する。
-  const newDisplayOrder = paymentMethodList.value.length + 1;
-
-  paymentMethodList.value.push({
-    id: nextId,
-    name: paymentMethodName.value.trim(),
-    paymentType: paymentType.value,
-    displayOrder: newDisplayOrder,
-  });
-
-  // 念のため表示順で並び替える。
-  sortPaymentMethodList();
-
-  // 登録後は入力欄を初期化
-  paymentMethodName.value = "";
-  paymentType.value = "";
 };
 
 // 編集モーダルを開く
@@ -214,6 +254,13 @@ const deletePaymentMethod = (paymentMethodId) => {
 
   closeEditModal();
 };
+// ========================
+// ⑤ ライフサイクル
+// ========================
+// 初期表示時に支払元一覧を取得する。
+onMounted(async () => {
+  await fetchPaymentMethodList();
+});
 </script>
 
 <template>
@@ -227,8 +274,22 @@ const deletePaymentMethod = (paymentMethodId) => {
       </p>
     </div>
 
+    <!-- 一覧取得エラーメッセージ -->
+    <div v-if="listErrorMessage" class="alert alert-danger">
+      {{ listErrorMessage }}
+    </div>
+    <!-- 登録エラーメッセージ -->
+    <div v-if="registerErrorMessage" class="alert alert-danger">
+      {{ registerErrorMessage }}
+    </div>
+    <!-- 登録成功メッセージ -->
+    <div v-if="registerSuccessMessage" class="alert alert-success">
+      {{ registerSuccessMessage }}
+    </div>
+
     <!-- 支払元一覧 -->
     <PaymentMethodsPaymentMethodSettingTable
+      ref="paymentMethodSettingTableRef"
       :payment-method-list="paymentMethodList"
       :payment-type-list="paymentTypeList"
       @edit="openEditModal"
