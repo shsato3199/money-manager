@@ -60,5 +60,20 @@ export const updateExpense = async (id, expense) => {
 
 // 変動費削除
 export const deleteExpense = async (id) => {
-  // DELETE
+  const apiBaseUrl = getApiBaseUrl();
+  const csrfToken = getCsrfToken();
+
+  return await $fetch(`${apiBaseUrl}/api/expenses/${id}`, {
+    method: "DELETE",
+    // Cookieなどの認証情報も一緒に送る指定。
+    credentials: "include",
+    // Spring SecurityへCSRFトークンを送る。
+    headers: csrfToken
+      ? {
+          "X-XSRF-TOKEN": csrfToken,
+        }
+      : {},
+    // /loginへのリダイレクトなどを削除成功として扱わない。
+    redirect: "error",
+  });
 };

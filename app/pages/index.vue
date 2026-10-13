@@ -5,7 +5,7 @@ import {
   fetchCategorySummary,
   fetchPaymentSummary,
 } from "../api/summaryApi";
-import { fetchExpenses, updateExpense } from "../api/expenseApi";
+import { fetchExpenses, updateExpense, deleteExpense } from "../api/expenseApi";
 import {
   fetchFixedExpenses,
   generateFixedExpenses,
@@ -174,6 +174,26 @@ const updateVariableExpense = async (updatedExpense) => {
     );
   }
 };
+// 変動費削除。
+const deleteVariableExpense = async (expense) => {
+  try {
+    // 変動費削除APIを呼び出す。
+    await deleteExpense(expense.id);
+
+    // 削除成功後に編集モーダルを閉じる。
+    closeExpenseModal();
+
+    // 変動費一覧・各集計を再取得する。
+    await Promise.all([
+      fetchVariableExpenses(),
+      fetchMonthlySummaryData(),
+      fetchCategorySummaryData(),
+      fetchPaymentSummaryData(),
+    ]);
+  } catch (error) {
+    console.error("変動費の削除に失敗しました。", error);
+  }
+};
 // ========================
 // ④ 画面操作
 // ========================
@@ -328,5 +348,6 @@ onMounted(async () => {
     :expense="editingVariableExpense"
     @close="closeExpenseModal"
     @update="updateVariableExpense"
+    @delete="deleteVariableExpense"
   />
 </template>

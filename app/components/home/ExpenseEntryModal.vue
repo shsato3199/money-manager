@@ -23,17 +23,21 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["close", "register", "update"]);
+const emit = defineEmits(["close", "register", "update", "delete"]);
 
 // ========================
 // ③ 状態
 // ========================
+// 新規登録完了メッセージの表示状態。
+const isRegisterSuccess = ref(false);
 
 // 変動費フォームのコンポーネント参照。
 const variableExpenseFormRef = ref(null);
 
-// 新規登録完了メッセージの表示状態。
-const isRegisterSuccess = ref(false);
+// 削除確認モーダルの表示状態。
+// null   : 非表示
+// DELETE : 削除確認
+const confirmationType = ref(null);
 
 // カテゴリ一覧。
 const categoryList = ref([]);
@@ -121,6 +125,9 @@ const closeModal = () => {
   // 次回モーダルを開いたときに登録完了メッセージが残らないようにする。
   isRegisterSuccess.value = false;
 
+  // 削除確認モーダルの表示状態を初期化する。
+  confirmationType.value = null;
+
   emit("close");
 };
 
@@ -153,6 +160,35 @@ const handleRegister = () => {
   // API登録成功後に親コンポーネントから
   // フォーム初期化・登録完了表示を行うため、ここではモーダルを閉じない。
   emit("register", formData);
+};
+
+// 削除確認モーダルを開く。
+const handleDelete = () => {
+  // 編集対象が存在しない場合は終了。
+  if (!isEditMode.value || !props.expense) {
+    return;
+  }
+
+  confirmationType.value = "DELETE";
+};
+
+// 削除確認モーダルを閉じる。
+const closeConfirmation = () => {
+  confirmationType.value = null;
+};
+
+// 変動費を削除する。
+const confirmDelete = () => {
+  // 編集対象が存在しない場合は終了。
+  if (!isEditMode.value || !props.expense) {
+    return;
+  }
+
+  // 削除確認モーダルを閉じる。
+  confirmationType.value = null;
+
+  // 親コンポーネントへ削除対象を通知する。
+  emit("delete", props.expense);
 };
 
 // 新規登録成功後の画面処理。
@@ -244,6 +280,15 @@ defineExpose({
 
             <!-- フッター -->
             <div class="modal-footer">
+              <!-- 編集時のみ削除ボタンを表示する。 -->
+              <button
+                v-if="isEditMode"
+                type="button"
+                class="btn btn-outline-danger me-auto"
+                @click="handleDelete"
+              >
+                削除
+              </button>
               <button class="btn btn-outline-secondary" @click="closeModal">
                 キャンセル
               </button>
@@ -259,5 +304,66 @@ defineExpose({
       <!-- 背景 -->
       <div class="modal-backdrop fade show"></div>
     </template>
+  </Teleport>
+  <!-- ======================== -->
+  <!-- 変動費の削除確認モーダル -->
+  <!-- ======================== -->
+  <Teleport to="body">
+    <!-- 削除確認モーダル -->
+    <div
+      v-if="isOpen && confirmationType === 'DELETE'"
+      class="modal fade show"
+      tabindex="-1"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="variable-expense-delete-title"
+      style="display: block; z-index: 1065"
+    >
+      <div class="modal-dialog modal-dialog-centered mx-3 mx-sm-auto">
+        <div class="modal-content">
+          <!-- ヘッダー -->
+          <div class="modal-header">
+            <h5 id="variable-expense-delete-title" class="modal-title">
+              変動費の削除
+            </h5>
+
+            <button
+              type="button"
+              class="btn-close"
+              aria-label="閉じる"
+              @click="closeConfirmation"
+            ></button>
+          </div>
+
+          <!-- 本文 -->
+          <div class="modal-body">
+            この変動費を削除しますか？<br />
+            削除後は元に戻せません。
+          </div>
+
+          <!-- フッター -->
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              @click="closeConfirmation"
+            >
+              キャンセル
+            </button>
+
+            <button type="button" class="btn btn-danger" @click="confirmDelete">
+              削除する
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 削除確認モーダル用の背景 -->
+    <div
+      v-if="isOpen && confirmationType === 'DELETE'"
+      class="modal-backdrop fade show"
+      style="z-index: 1060"
+    ></div>
   </Teleport>
 </template>
