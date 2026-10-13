@@ -5,7 +5,7 @@ import {
   fetchCategorySummary,
   fetchPaymentSummary,
 } from "../api/summaryApi";
-import { fetchExpenses } from "../api/expenseApi";
+import { fetchExpenses, updateExpense } from "../api/expenseApi";
 import {
   fetchFixedExpenses,
   generateFixedExpenses,
@@ -145,6 +145,35 @@ const fetchHomeData = async () => {
     fetchVariableExpenses(),
   ]);
 };
+
+// 変動費を更新する。
+const updateVariableExpense = async (updatedExpense) => {
+  // 編集対象が存在しない場合は処理しない。
+  if (!editingVariableExpense.value) {
+    return;
+  }
+
+  try {
+    // 変動費更新APIを呼び出す。
+    await updateExpense(editingVariableExpense.value.id, updatedExpense);
+
+    // 編集モーダルを閉じる。
+    closeExpenseModal();
+
+    // ホーム画面の一覧・集計を再取得する。
+    await Promise.all([
+      fetchVariableExpenses(),
+      fetchMonthlySummaryData(),
+      fetchCategorySummaryData(),
+      fetchPaymentSummaryData(),
+    ]);
+  } catch (error) {
+    console.error(
+      "変動費の更新に失敗しました。もう一度お試しください。",
+      error,
+    );
+  }
+};
 // ========================
 // ④ 画面操作
 // ========================
@@ -200,47 +229,6 @@ const openVariableExpenseEditModal = (expense) => {
 const closeExpenseModal = () => {
   isExpenseModalOpen.value = false;
   editingVariableExpense.value = null;
-};
-
-// 変動費の編集内容を一覧へ反映する。
-const updateVariableExpense = (updatedExpense) => {
-  const targetIndex = variableExpenseList.value.findIndex(
-    (item) => item.id === updatedExpense.id,
-  );
-
-  if (targetIndex === -1) {
-    return;
-  }
-
-  // 現在は仮データなので、カテゴリ名・支払元名はIDから取得する。
-  const categoryList = [
-    { id: 1, name: "食費" },
-    { id: 2, name: "日用品" },
-    { id: 3, name: "交通費" },
-    { id: 4, name: "趣味" },
-  ];
-
-  const paymentMethodList = [
-    { id: 1, name: "現金" },
-    { id: 2, name: "楽天カード" },
-    { id: 3, name: "かんぽ" },
-  ];
-
-  const category = categoryList.find(
-    (item) => item.id === updatedExpense.categoryId,
-  );
-
-  const paymentMethod = paymentMethodList.find(
-    (item) => item.id === updatedExpense.paymentMethodId,
-  );
-
-  variableExpenseList.value[targetIndex] = {
-    ...updatedExpense,
-    categoryName: category?.name ?? "",
-    paymentMethodName: paymentMethod?.name ?? "",
-  };
-
-  closeExpenseModal();
 };
 
 // ========================

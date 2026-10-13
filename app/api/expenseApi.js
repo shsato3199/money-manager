@@ -39,7 +39,23 @@ export const createExpense = async (expense) => {
 
 // 変動費更新
 export const updateExpense = async (id, expense) => {
-  // PUT
+  const apiBaseUrl = getApiBaseUrl();
+  const csrfToken = getCsrfToken();
+
+  return await $fetch(`${apiBaseUrl}/api/expenses/${id}`, {
+    method: "PUT",
+    body: expense,
+    // Cookieなどの認証情報も一緒に送る指定。
+    credentials: "include",
+    // Spring SecurityへCSRFトークンを送る。
+    headers: csrfToken
+      ? {
+          "X-XSRF-TOKEN": csrfToken,
+        }
+      : {},
+    // /loginへのリダイレクトなどを更新成功として扱わない。
+    redirect: "error",
+  });
 };
 
 // 変動費削除

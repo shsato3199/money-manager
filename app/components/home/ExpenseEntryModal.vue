@@ -139,12 +139,13 @@ const handleRegister = () => {
 
   // 編集の場合。
   if (isEditMode.value) {
+    // 親コンポーネントへ更新内容を通知する。
     emit("update", {
       ...props.expense,
       ...formData,
     });
 
-    closeModal();
+    // 更新成功後に親コンポーネント側でモーダルを閉じる。
     return;
   }
 
