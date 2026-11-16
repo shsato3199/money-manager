@@ -195,8 +195,9 @@ const registerFixedExpense = () => {
     autoGenerate: autoGenerate.value,
     memo: memo.value,
   });
-
-  // 登録後に入力欄を初期化
+};
+// API登録成功後に親コンポーネントから呼び出す入力欄初期化処理。
+const resetForm = () => {
   fixedExpenseName.value = "";
   amount.value = "";
   categoryId.value = "";
@@ -207,6 +208,8 @@ const registerFixedExpense = () => {
   autoGenerate.value = true;
   memo.value = "";
 };
+// 親コンポーネントから入力欄初期化処理を呼び出せるようにする。
+defineExpose({ resetForm });
 </script>
 
 <template>

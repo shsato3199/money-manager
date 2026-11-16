@@ -22,6 +22,8 @@ const fixedExpenseList = ref([]);
 const fixedExpenseListErrorMessage = ref("");
 // 登録済み固定費一覧のコンポーネント参照。
 const fixedExpenseSettingTableRef = ref(null);
+// 固定費登録フォームのコンポーネント参照。
+const fixedExpenseRegisterFormRef = ref(null);
 // 固定費登録エラーメッセージ。
 const registerErrorMessage = ref("");
 // 固定費登録成功メッセージ。
@@ -115,10 +117,22 @@ const registerFixedExpense = async (newFixedExpense) => {
     console.error("固定費登録に失敗しました。", error);
 
     registerErrorMessage.value = "固定費の登録に失敗しました。";
+
+    // エラーメッセージが見えるように画面上部へ移動する。
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+
     return;
   }
+
+  // API登録成功後にのみ入力欄を初期化する。
+  fixedExpenseRegisterFormRef.value?.resetForm();
+
   // 登録成功メッセージを表示する。
   registerSuccessMessage.value = "登録しました";
+
   // 登録済み固定費のアコーディオンを閉じる。
   fixedExpenseSettingTableRef.value?.closeAccordion();
 
@@ -232,6 +246,14 @@ onMounted(async () => {
     >
       {{ registerSuccessMessage }}
     </div>
+    <!-- 固定費登録エラーメッセージ -->
+    <div
+      v-if="registerErrorMessage"
+      class="alert alert-danger mt-3"
+      role="alert"
+    >
+      {{ registerErrorMessage }}
+    </div>
     <!-- 固定費設定更新・削除成功メッセージ -->
     <div
       v-if="editSuccessMessage"
@@ -267,6 +289,7 @@ onMounted(async () => {
     </div>
     <!-- 固定費新規登録 -->
     <FixedExpensesFixedExpenseRegisterForm
+      ref="fixedExpenseRegisterFormRef"
       :category-list="categoryList"
       :payment-method-list="paymentMethodList"
       @register="registerFixedExpense"
