@@ -56,10 +56,15 @@ watch(
     categoryName.value = category.name;
     displayOrder.value = category.displayOrder;
 
+    // 入力エラーを初期化する。
     errors.value = {
       categoryName: "",
       displayOrder: "",
     };
+
+    // 削除確認関連の状態を初期化する。
+    deleteErrorMessage.value = "";
+    confirmationType.value = null;
   },
   {
     immediate: true,

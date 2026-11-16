@@ -28,3 +28,38 @@ export const createPaymentMethod = async (paymentMethod) => {
     redirect: "error",
   });
 };
+
+// 支払元更新。
+export const updatePaymentMethod = async (id, paymentMethod) => {
+  const apiBaseUrl = getApiBaseUrl();
+  const csrfToken = getCsrfToken();
+
+  return await $fetch(`${apiBaseUrl}/api/payment-methods/${id}`, {
+    method: "PUT",
+    body: paymentMethod,
+    credentials: "include",
+    headers: csrfToken
+      ? {
+          "X-XSRF-TOKEN": csrfToken,
+        }
+      : {},
+    redirect: "error",
+  });
+};
+
+// 支払元論理削除。
+export const deletePaymentMethod = async (id) => {
+  const apiBaseUrl = getApiBaseUrl();
+  const csrfToken = getCsrfToken();
+
+  return await $fetch(`${apiBaseUrl}/api/payment-methods/${id}`, {
+    method: "DELETE",
+    credentials: "include",
+    headers: csrfToken
+      ? {
+          "X-XSRF-TOKEN": csrfToken,
+        }
+      : {},
+    redirect: "error",
+  });
+};

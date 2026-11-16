@@ -27,3 +27,38 @@ export const createCategory = async (category) => {
     redirect: "error",
   });
 };
+
+// カテゴリ更新
+export const updateCategory = async (id, category) => {
+  const apiBaseUrl = getApiBaseUrl();
+  const csrfToken = getCsrfToken();
+
+  return await $fetch(`${apiBaseUrl}/api/categories/${id}`, {
+    method: "PUT",
+    body: category,
+    credentials: "include",
+    headers: csrfToken
+      ? {
+          "X-XSRF-TOKEN": csrfToken,
+        }
+      : {},
+    redirect: "error",
+  });
+};
+
+// カテゴリ論理削除
+export const deleteCategory = async (id) => {
+  const apiBaseUrl = getApiBaseUrl();
+  const csrfToken = getCsrfToken();
+
+  return await $fetch(`${apiBaseUrl}/api/categories/${id}`, {
+    method: "DELETE",
+    credentials: "include",
+    headers: csrfToken
+      ? {
+          "X-XSRF-TOKEN": csrfToken,
+        }
+      : {},
+    redirect: "error",
+  });
+};

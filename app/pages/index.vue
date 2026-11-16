@@ -133,12 +133,8 @@ const fetchVariableExpenses = async () => {
 
 // ホーム画面の一覧・集計データを取得する。
 const fetchHomeData = async () => {
-  try {
-    // 固定費の未生成月分を自動生成する。
-    await generateFixedExpenses();
-  } catch (error) {
-    console.error("固定費の自動生成に失敗しました。", error);
-  }
+  // 固定費の未生成月分を自動生成する。
+  await generateFixedExpenses();
 
   // 固定費自動生成完了後、一覧・集計データを取得する。
   await Promise.all([
@@ -178,25 +174,10 @@ const updateVariableExpense = async (updatedExpense) => {
     );
   }
 };
-// 変動費削除。
-const deleteVariableExpense = async (expense) => {
-  try {
-    // 変動費削除APIを呼び出す。
-    await deleteExpense(expense.id);
-
-    // 削除成功後に編集モーダルを閉じる。
-    closeExpenseModal();
-
-    // 変動費一覧・各集計を再取得する。
-    await Promise.all([
-      fetchVariableExpenses(),
-      fetchMonthlySummaryData(),
-      fetchCategorySummaryData(),
-      fetchPaymentSummaryData(),
-    ]);
-  } catch (error) {
-    console.error("変動費の削除に失敗しました。", error);
-  }
+// 変動費を削除する。
+// DELETE APIとの連携は後で実装する。
+const deleteVariableExpense = (expense) => {
+  console.log("削除対象の変動費:", expense);
 };
 // ========================
 // ④ 画面操作

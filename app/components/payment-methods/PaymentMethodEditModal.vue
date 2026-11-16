@@ -75,6 +75,9 @@ watch(
       paymentType: "",
       displayOrder: "",
     };
+    // 削除確認関連の状態を初期化する。
+    deleteErrorMessage.value = "";
+    confirmationType.value = null;
   },
   {
     immediate: true,
@@ -144,6 +147,7 @@ const validate = () => {
 // モーダルを閉じる
 const closeModal = () => {
   confirmationType.value = null;
+  deleteErrorMessage.value = "";
   emit("close");
 };
 
@@ -313,6 +317,11 @@ const deletePaymentMethod = () => {
               >
                 削除
               </button>
+
+              <!-- 削除エラーメッセージ -->
+              <div v-if="deleteErrorMessage" class="text-danger small mt-2">
+                {{ deleteErrorMessage }}
+              </div>
 
               <!-- 右側：キャンセル・更新 -->
               <div class="d-flex gap-2">

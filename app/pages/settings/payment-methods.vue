@@ -3,6 +3,8 @@ import { REQUIRED_MESSAGE, isRequired } from "~/utils/validation";
 import {
   fetchPaymentMethods,
   createPaymentMethod,
+  updatePaymentMethod as updatePaymentMethodApi,
+  deletePaymentMethod as deletePaymentMethodApi,
 } from "~/api/paymentMethodApi";
 // ========================
 // ① 状態
@@ -20,6 +22,9 @@ const registerSuccessMessage = ref("");
 
 // 一覧取得エラーメッセージ。
 const listErrorMessage = ref("");
+// 編集・削除結果のメッセージ。
+const editErrorMessage = ref("");
+const editSuccessMessage = ref("");
 
 // 新規登録フォーム
 const paymentMethodName = ref("");
@@ -176,83 +181,68 @@ const closeEditModal = () => {
   editingPaymentMethod.value = null;
 };
 
-// 編集内容を一覧へ反映
-const updatePaymentMethod = (updatedPaymentMethod) => {
-  const targetIndex = paymentMethodList.value.findIndex(
-    (item) => item.id === updatedPaymentMethod.id,
-  );
+// 支払元更新。
+const updatePaymentMethod = async (updatedPaymentMethod) => {
+  // メッセージを初期化する。
+  editErrorMessage.value = "";
+  editSuccessMessage.value = "";
 
-  if (targetIndex === -1) {
-    return;
-  }
-
-  const oldDisplayOrder = paymentMethodList.value[targetIndex].displayOrder;
-  const newDisplayOrder = updatedPaymentMethod.displayOrder;
-
-  // 後ろへ移動する場合
-  if (oldDisplayOrder < newDisplayOrder) {
-    paymentMethodList.value.forEach((item) => {
-      if (
-        item.id !== updatedPaymentMethod.id &&
-        item.displayOrder > oldDisplayOrder &&
-        item.displayOrder <= newDisplayOrder
-      ) {
-        item.displayOrder -= 1;
-      }
+  try {
+    // 支払元更新API。
+    await updatePaymentMethodApi(updatedPaymentMethod.id, {
+      name: updatedPaymentMethod.name,
+      paymentType: updatedPaymentMethod.paymentType,
+      displayOrder: updatedPaymentMethod.displayOrder,
     });
-  }
 
-  // 前へ移動する場合
-  if (oldDisplayOrder > newDisplayOrder) {
-    paymentMethodList.value.forEach((item) => {
-      if (
-        item.id !== updatedPaymentMethod.id &&
-        item.displayOrder >= newDisplayOrder &&
-        item.displayOrder < oldDisplayOrder
-      ) {
-        item.displayOrder += 1;
-      }
-    });
-  }
+    // 更新成功後に編集モーダルを閉じる。
+    closeEditModal();
 
-  // 編集対象を更新
-  paymentMethodList.value[targetIndex] = {
-    ...updatedPaymentMethod,
-  };
-  sortPaymentMethodList();
-  closeEditModal();
+    // 更新成功メッセージを表示する。
+    editSuccessMessage.value = "更新しました";
+
+    // 支払元一覧を再取得する。
+    await fetchPaymentMethodList();
+  } catch (error) {
+    console.error("支払元の更新に失敗しました。", error);
+
+    // 支払元名が重複している場合。
+    if (error.response?.status === 409) {
+      editErrorMessage.value = "同じ名前の支払元が既に登録されています。";
+    } else {
+      editErrorMessage.value = "支払元の更新に失敗しました。";
+    }
+  }
 };
-// 支払元を削除する。
-const deletePaymentMethod = (paymentMethodId) => {
+// 支払元論理削除。
+const deletePaymentMethod = async (paymentMethodId) => {
+  // メッセージを初期化する。
+  editErrorMessage.value = "";
+  editSuccessMessage.value = "";
+
   // 支払元は最低1件残す。
   if (paymentMethodList.value.length <= 1) {
+    editErrorMessage.value = "支払元をすべて削除することはできません。";
     return;
   }
 
-  const targetIndex = paymentMethodList.value.findIndex(
-    (item) => item.id === paymentMethodId,
-  );
+  try {
+    // 支払元削除API。
+    await deletePaymentMethodApi(paymentMethodId);
 
-  if (targetIndex === -1) {
-    return;
+    // 削除成功後に編集モーダルを閉じる。
+    closeEditModal();
+
+    // 削除成功メッセージを表示する。
+    editSuccessMessage.value = "削除しました";
+
+    // 支払元一覧を再取得する。
+    await fetchPaymentMethodList();
+  } catch (error) {
+    console.error("支払元の削除に失敗しました。", error);
+
+    editErrorMessage.value = "支払元の削除に失敗しました。";
   }
-
-  const deletedDisplayOrder = paymentMethodList.value[targetIndex].displayOrder;
-
-  // 対象データを一覧から削除する。
-  paymentMethodList.value.splice(targetIndex, 1);
-
-  // 削除した表示順より後ろのデータを
-  // 1つずつ前へ詰める。
-  paymentMethodList.value.forEach((item) => {
-    if (item.displayOrder > deletedDisplayOrder) {
-      item.displayOrder -= 1;
-    }
-  });
-
-  sortPaymentMethodList();
-
-  closeEditModal();
 };
 // ========================
 // ⑤ ライフサイクル
@@ -286,7 +276,15 @@ onMounted(async () => {
     <div v-if="registerSuccessMessage" class="alert alert-success">
       {{ registerSuccessMessage }}
     </div>
+    <!-- 編集・削除エラーメッセージ -->
+    <div v-if="editErrorMessage" class="alert alert-danger" role="alert">
+      {{ editErrorMessage }}
+    </div>
 
+    <!-- 編集・削除成功メッセージ -->
+    <div v-if="editSuccessMessage" class="alert alert-success" role="status">
+      {{ editSuccessMessage }}
+    </div>
     <!-- 支払元一覧 -->
     <PaymentMethodsPaymentMethodSettingTable
       ref="paymentMethodSettingTableRef"

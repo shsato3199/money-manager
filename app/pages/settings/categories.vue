@@ -2,7 +2,12 @@
 // ========================
 // ① import
 // ========================
-import { fetchCategories, createCategory } from "~/api/categoryApi";
+import {
+  fetchCategories,
+  createCategory,
+  updateCategory as updateCategoryApi,
+  deleteCategory as deleteCategoryApi,
+} from "~/api/categoryApi";
 
 // ========================
 // ② 状態
@@ -16,6 +21,10 @@ const registerErrorMessage = ref("");
 const registerSuccessMessage = ref("");
 // 一覧取得エラーメッセージ
 const listErrorMessage = ref("");
+// 編集・削除エラーメッセージ
+const editErrorMessage = ref("");
+// 編集・削除成功メッセージ
+const editSuccessMessage = ref("");
 // 登録フォームの参照
 const categoryRegisterFormRef = ref(null);
 // 編集モーダル
@@ -98,76 +107,67 @@ const closeEditModal = () => {
 };
 
 // カテゴリ更新
-const updateCategory = (updatedCategory) => {
-  const targetIndex = categoryList.value.findIndex(
-    (category) => category.id === updatedCategory.id,
-  );
+const updateCategory = async (updatedCategory) => {
+  // メッセージを初期化する。
+  editErrorMessage.value = "";
+  editSuccessMessage.value = "";
 
-  if (targetIndex === -1) {
-    return;
-  }
-
-  const oldDisplayOrder = categoryList.value[targetIndex].displayOrder;
-
-  const newDisplayOrder = updatedCategory.displayOrder;
-
-  // 表示順を後ろへ移動
-  if (oldDisplayOrder < newDisplayOrder) {
-    categoryList.value.forEach((category) => {
-      if (
-        category.id !== updatedCategory.id &&
-        category.displayOrder > oldDisplayOrder &&
-        category.displayOrder <= newDisplayOrder
-      ) {
-        category.displayOrder -= 1;
-      }
+  try {
+    // カテゴリ更新API
+    await updateCategoryApi(updatedCategory.id, {
+      name: updatedCategory.name,
+      displayOrder: updatedCategory.displayOrder,
     });
-  }
 
-  // 表示順を前へ移動
-  if (oldDisplayOrder > newDisplayOrder) {
-    categoryList.value.forEach((category) => {
-      if (
-        category.id !== updatedCategory.id &&
-        category.displayOrder >= newDisplayOrder &&
-        category.displayOrder < oldDisplayOrder
-      ) {
-        category.displayOrder += 1;
-      }
-    });
-  }
+    // 更新成功後に編集モーダルを閉じる。
+    closeEditModal();
 
-  categoryList.value[targetIndex] = {
-    ...updatedCategory,
-  };
-  sortCategoryList();
-  closeEditModal();
+    // 更新成功メッセージを表示する。
+    editSuccessMessage.value = "更新しました";
+
+    // カテゴリ一覧を再取得する。
+    await fetchCategoryList();
+  } catch (error) {
+    console.error("カテゴリの更新に失敗しました。", error);
+
+    // カテゴリ名が重複している場合。
+    if (error.response?.status === 409) {
+      editErrorMessage.value = "同じ名前のカテゴリが既に登録されています。";
+    } else {
+      editErrorMessage.value = "カテゴリの更新に失敗しました。";
+    }
+  }
 };
 
-// カテゴリ削除
-const deleteCategory = (categoryId) => {
-  // カテゴリは最低1件残す
+// カテゴリ論理削除
+const deleteCategory = async (categoryId) => {
+  // メッセージを初期化する。
+  editErrorMessage.value = "";
+  editSuccessMessage.value = "";
+
+  // カテゴリは最低1件残す。
   if (categoryList.value.length <= 1) {
-    return;
-  }
-  const targetIndex = categoryList.value.findIndex(
-    (category) => category.id === categoryId,
-  );
-  if (targetIndex === -1) {
+    editErrorMessage.value = "カテゴリをすべて削除することはできません。";
     return;
   }
 
-  const deletedDisplayOrder = categoryList.value[targetIndex].displayOrder;
-  // 今はAPI未接続なので配列から削除
-  categoryList.value.splice(targetIndex, 1);
-  // 削除したカテゴリより後ろを1つずつ繰り上げる
-  categoryList.value.forEach((category) => {
-    if (category.displayOrder > deletedDisplayOrder) {
-      category.displayOrder -= 1;
-    }
-  });
-  sortCategoryList();
-  closeEditModal();
+  try {
+    // カテゴリ削除API
+    await deleteCategoryApi(categoryId);
+
+    // 削除成功後に編集モーダルを閉じる。
+    closeEditModal();
+
+    // 削除成功メッセージを表示する。
+    editSuccessMessage.value = "削除しました";
+
+    // カテゴリ一覧を再取得する。
+    await fetchCategoryList();
+  } catch (error) {
+    console.error("カテゴリの削除に失敗しました。", error);
+
+    editErrorMessage.value = "カテゴリの削除に失敗しました。";
+  }
 };
 
 onMounted(async () => {
@@ -190,17 +190,6 @@ onMounted(async () => {
       {{ listErrorMessage }}
     </div>
 
-    <!-- 登録済みカテゴリ -->
-    <CategoriesCategorySettingTable
-      :category-list="categoryList"
-      @edit="openEditModal"
-    />
-
-    <!-- カテゴリ登録 -->
-    <CategoriesCategoryRegisterForm
-      ref="categoryRegisterFormRef"
-      @register="registerCategory"
-    />
     <!-- カテゴリ登録エラー -->
     <div v-if="registerErrorMessage" class="alert alert-danger" role="alert">
       {{ registerErrorMessage }}
@@ -214,6 +203,28 @@ onMounted(async () => {
     >
       {{ registerSuccessMessage }}
     </div>
+
+    <!-- 編集・削除エラーメッセージ -->
+    <div v-if="editErrorMessage" class="alert alert-danger" role="alert">
+      {{ editErrorMessage }}
+    </div>
+
+    <!-- 編集・削除成功メッセージ -->
+    <div v-if="editSuccessMessage" class="alert alert-success" role="status">
+      {{ editSuccessMessage }}
+    </div>
+
+    <!-- 登録済みカテゴリ -->
+    <CategoriesCategorySettingTable
+      :category-list="categoryList"
+      @edit="openEditModal"
+    />
+
+    <!-- カテゴリ登録 -->
+    <CategoriesCategoryRegisterForm
+      ref="categoryRegisterFormRef"
+      @register="registerCategory"
+    />
 
     <!-- 編集モーダル -->
     <CategoriesCategoryEditModal
